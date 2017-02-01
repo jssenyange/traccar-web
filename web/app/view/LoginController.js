@@ -42,10 +42,6 @@ Ext.define('Traccar.view.LoginController', {
                 callback: function (options, success, response) {
                     Ext.get('spinner').setVisible(false);
                     if (success) {
-                        if (this.lookupReference('rememberField').getValue()) {
-                            Ext.util.Cookies.set('user', this.lookupReference('userField').getValue(), Ext.Date.add(new Date(), Ext.Date.YEAR, 1));
-                            Ext.util.Cookies.set('password', this.lookupReference('passwordField').getValue(), Ext.Date.add(new Date(), Ext.Date.YEAR, 1));
-                        }
                         Traccar.app.setUser(Ext.decode(response.responseText));
                         this.fireViewEvent('login');
                     } else {
