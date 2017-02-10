@@ -32,11 +32,11 @@ Ext.define('Traccar.view.DevicesController', {
         listen: {
             controller: {
                 '*': {
-                    selectreport: 'selectReport',
-                    deselectfeature: 'deselectFeature'
+                    selectreport: 'selectReport'
                 },
                 'map': {
-                    selectdevice: 'selectDevice'
+                    selectdevice: 'selectDevice',
+                    deselectfeature: 'deselectFeature'
                 }
             },
             store: {
@@ -58,6 +58,7 @@ Ext.define('Traccar.view.DevicesController', {
         this.lookupReference('toolbarAddButton').setVisible(!readonly && !deviceReadonly);
         this.lookupReference('toolbarEditButton').setVisible(!readonly && !deviceReadonly);
         this.lookupReference('toolbarRemoveButton').setVisible(!readonly && !deviceReadonly);
+        this.lookupReference('deviceCommandButton').setVisible(!readonly && !deviceReadonly);
         this.lookupReference('toolbarGeofencesButton').setVisible(!readonly);
     },
 
@@ -101,6 +102,8 @@ Ext.define('Traccar.view.DevicesController', {
         this.updateButtons(selected);
         if (selected.getCount() > 0) {
             this.fireEvent('selectdevice', selected.getLastSelected(), true);
+        } else {
+            this.fireEvent('deselectfeature');
         }
     },
 
