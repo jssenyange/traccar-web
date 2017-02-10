@@ -26,6 +26,9 @@ Ext.define('Traccar.view.LoginController', {
     init: function () {
         this.lookupReference('registerButton').setDisabled(
             !Traccar.app.getServer().get('registration'));
+        if (!Traccar.app.getServer().get('registration')) {
+            this.lookupReference('registerButton').hide();
+        }
         this.lookupReference('languageField').setValue(Locale.language);
     },
 
