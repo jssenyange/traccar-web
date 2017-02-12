@@ -49,6 +49,7 @@
         'id': { name: 'Bahasa Indonesia', code: 'id' },
         'it': { name: 'Italiano', code: 'it' },
         'ka': { name: 'ქართული', code: 'en' },
+        'km': { name: 'ភាសាខ្មែរ', code: 'en' },
         'lo': { name: 'ລາວ', code: 'en' },
         'lt': { name: 'Lietuvių', code: 'lt' },
         'ml': { name: 'മലയാളം', code: 'en' },
@@ -71,6 +72,7 @@
         'th': { name: 'ไทย', code: 'th' },
         'tr': { name: 'Türkçe', code: 'tr' },
         'uk': { name: 'Українська', code: 'ukr' },
+        'uz': { name: 'Oʻzbekcha', code: 'en' },
         'vi': { name: 'Tiếng Việt', code: 'en' },
         'zh': { name: '中文', code: 'zh_CN' }
     };
@@ -117,7 +119,7 @@
 
     extjsVersion = '6.2.0';
     fontAwesomeVersion = '4.7.0';
-    olVersion = '3.20.1';
+    olVersion = '4.0.0';
 
     if (debugMode) {
         addScriptFile('//cdnjs.cloudflare.com/ajax/libs/extjs/' + extjsVersion + '/ext-all.js');
@@ -136,7 +138,13 @@
     addStyleFile('//cdnjs.cloudflare.com/ajax/libs/font-awesome/' + fontAwesomeVersion + '/css/font-awesome.min.css');
 
     addStyleFile('//cdnjs.cloudflare.com/ajax/libs/ol3/' + olVersion + '/ol.css');
-    addScriptFile('//cdnjs.cloudflare.com/ajax/libs/ol3/' + olVersion + '/ol.js');
+
+    if (debugMode) {
+        addScriptFile('//cdnjs.cloudflare.com/ajax/libs/ol3/' + olVersion + '/ol-debug.js');
+    } else {
+        addScriptFile('//cdnjs.cloudflare.com/ajax/libs/ol3/' + olVersion + '/ol.js');
+    }
+
 
     addSvgFile('images/default.svg', 'defaultSvg');
     addSvgFile('images/arrow.svg', 'arrowSvg');
