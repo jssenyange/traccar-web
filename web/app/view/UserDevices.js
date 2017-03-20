@@ -36,17 +36,17 @@ Ext.define('Traccar.view.UserDevices', {
         beforeselect: 'onBeforeSelect'
     },
 
-    forceFit: true,
-
     columns: {
         items: [{
             text: Strings.sharedName,
-            minWidth: Traccar.Style.columnWidthNormal,
-            dataIndex: 'name'
+            dataIndex: 'name',
+            flex: 1,
+            minWidth: Traccar.Style.columnWidthNormal
         }, {
             text: Strings.deviceIdentifier,
-            minWidth: Traccar.Style.columnWidthNormal,
-            dataIndex: 'uniqueId'
+            dataIndex: 'uniqueId',
+            flex: 1,
+            minWidth: Traccar.Style.columnWidthNormal
         }]
     }
 });

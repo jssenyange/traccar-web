@@ -29,6 +29,9 @@ Ext.define('Traccar.model.Server', {
         name: 'readonly',
         type: 'boolean'
     }, {
+        name: 'deviceReadonly',
+        type: 'boolean'
+    }, {
         name: 'map',
         type: 'string'
     }, {
@@ -60,6 +63,9 @@ Ext.define('Traccar.model.Server', {
         type: 'boolean'
     }, {
         name: 'coordinateFormat',
+        type: 'string'
+    }, {
+        name: 'timezone',
         type: 'string'
     }, {
         name: 'attributes'

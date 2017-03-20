@@ -28,8 +28,6 @@ Ext.define('Traccar.view.Users', {
     controller: 'users',
     store: 'Users',
 
-    selType: 'rowmodel',
-
     tbar: {
         xtype: 'editToolbar',
         items: [{
@@ -81,10 +79,9 @@ Ext.define('Traccar.view.Users', {
         selectionchange: 'onSelectionChange'
     },
 
-    forceFit: true,
-
     columns: {
         defaults: {
+            flex: 1,
             minWidth: Traccar.Style.columnWidthNormal
         },
         items: [{

@@ -27,8 +27,6 @@ Ext.define('Traccar.view.Groups', {
     controller: 'groups',
     store: 'Groups',
 
-    selType: 'rowmodel',
-
     tbar: {
         xtype: 'editToolbar',
         items: [{
@@ -46,10 +44,9 @@ Ext.define('Traccar.view.Groups', {
         selectionchange: 'onSelectionChange'
     },
 
-    forceFit: true,
-
     columns: {
         defaults: {
+            flex: 1,
             minWidth: Traccar.Style.columnWidthNormal
         },
         items: [{

@@ -53,13 +53,9 @@ Ext.define('Traccar.view.DevicesController', {
 
     init: function () {
         var readonly, deviceReadonly;
-        deviceReadonly = Traccar.app.getUser().get('deviceReadonly');
+        deviceReadonly = Traccar.app.getPreference('deviceReadonly', false) && !Traccar.app.getUser().get('admin');
         readonly = Traccar.app.getPreference('readonly', false) && !Traccar.app.getUser().get('admin');
-        this.lookupReference('toolbarAddButton').setVisible(!readonly && !deviceReadonly);
-        this.lookupReference('toolbarEditButton').setVisible(!readonly && !deviceReadonly);
-        this.lookupReference('toolbarRemoveButton').setVisible(!readonly && !deviceReadonly);
-        this.lookupReference('deviceCommandButton').setVisible(!readonly && !deviceReadonly);
-        this.lookupReference('toolbarGeofencesButton').setVisible(!readonly);
+        this.lookupReference('toolbarAddButton').setDisabled(readonly || deviceReadonly);
     },
 
     onGeofencesClick: function () {
@@ -78,24 +74,34 @@ Ext.define('Traccar.view.DevicesController', {
     },
 
     onCommandClick: function () {
-        var device, deviceId, command, dialog, comboStore;
+        var device, deviceId, command, dialog, typesStore, online;
         device = this.getView().getSelectionModel().getSelection()[0];
+        online = device.get('status') === 'online';
         deviceId = device.get('id');
+
         command = Ext.create('Traccar.model.Command');
         command.set('deviceId', deviceId);
+        command.set('textChannel', !online);
+
         dialog = Ext.create('Traccar.view.CommandDialog');
-        comboStore = dialog.down('form').down('combobox').getStore();
-        comboStore.getProxy().setExtraParam('deviceId', deviceId);
+
+        typesStore = dialog.lookupReference('commandType').getStore();
+        typesStore.getProxy().setExtraParam('deviceId', deviceId);
+
         dialog.down('form').loadRecord(command);
+        dialog.lookupReference('textChannelCheckBox').setDisabled(!online);
         dialog.show();
     },
 
     updateButtons: function (selected) {
-        var empty = selected.getCount() === 0;
-        this.lookupReference('toolbarEditButton').setDisabled(empty);
-        this.lookupReference('toolbarRemoveButton').setDisabled(empty);
-        this.lookupReference('toolbarGeofencesButton').setDisabled(empty);
-        this.lookupReference('deviceCommandButton').setDisabled(empty || (selected.getLastSelected().get('status') !== 'online'));
+        var readonly, deviceReadonly, empty;
+        deviceReadonly = Traccar.app.getPreference('deviceReadonly', false) && !Traccar.app.getUser().get('admin');
+        readonly = Traccar.app.getPreference('readonly', false) && !Traccar.app.getUser().get('admin');
+        empty = selected.getCount() === 0;
+        this.lookupReference('toolbarEditButton').setDisabled(empty || readonly || deviceReadonly);
+        this.lookupReference('toolbarRemoveButton').setDisabled(empty || readonly || deviceReadonly);
+        this.lookupReference('toolbarGeofencesButton').setDisabled(empty || readonly);
+        this.lookupReference('deviceCommandButton').setDisabled(empty || readonly);
     },
 
     onSelectionChange: function (selected) {

@@ -35,8 +35,6 @@ Ext.define('Traccar.view.Devices', {
         this.callParent();
     },
 
-    selType: 'rowmodel',
-
     tbar: {
         componentCls: 'toolbar-header-style',
         items: [{
@@ -47,6 +45,7 @@ Ext.define('Traccar.view.Devices', {
             xtype: 'tbfill'
         }, {
             xtype: 'button',
+            disabled: true,
             handler: 'onAddClick',
             reference: 'toolbarAddButton',
             glyph: 'xf067@FontAwesome',
@@ -145,10 +144,9 @@ Ext.define('Traccar.view.Devices', {
         selectionchange: 'onSelectionChange'
     },
 
-    forceFit: true,
-
     columns: {
         defaults: {
+            flex: 1,
             minWidth: Traccar.Style.columnWidthNormal
         },
         items: [{

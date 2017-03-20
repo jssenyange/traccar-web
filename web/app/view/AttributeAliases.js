@@ -27,8 +27,6 @@ Ext.define('Traccar.view.AttributeAliases', {
 
     controller: 'attributeAliases',
 
-    selType: 'rowmodel',
-
     tbar: {
         xtype: 'editToolbar',
         items: ['-', {
@@ -40,7 +38,7 @@ Ext.define('Traccar.view.AttributeAliases', {
             store: 'Devices',
             displayField: 'name',
             valueField: 'id',
-            typeAhead: true,
+            editable: false,
             listeners: {
                 change: 'onDeviceChange'
             }
@@ -51,10 +49,9 @@ Ext.define('Traccar.view.AttributeAliases', {
         selectionchange: 'onSelectionChange'
     },
 
-    forceFit: true,
-
     columns: {
         defaults: {
+            flex: 1,
             minWidth: Traccar.Style.columnWidthNormal
         },
         items: [{

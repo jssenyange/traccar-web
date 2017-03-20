@@ -27,8 +27,6 @@ Ext.define('Traccar.view.Geofences', {
     controller: 'geofences',
     store: 'Geofences',
 
-    selType: 'rowmodel',
-
     tbar: {
         xtype: 'editToolbar'
     },
@@ -37,10 +35,9 @@ Ext.define('Traccar.view.Geofences', {
         selectionchange: 'onSelectionChange'
     },
 
-    forceFit: true,
-
     columns: {
         defaults: {
+            flex: 1,
             minWidth: Traccar.Style.columnWidthNormal
         },
         items: [{
