@@ -24,7 +24,7 @@ Ext.define('Traccar.view.ReportController', {
         'Traccar.AttributeFormatter',
         'Traccar.model.Position',
         'Traccar.model.ReportTrip',
-        'Traccar.view.ReportConfigDialog',
+        'Traccar.view.dialog.ReportConfig',
         'Traccar.store.ReportEventTypes'
     ],
 
@@ -65,7 +65,7 @@ Ext.define('Traccar.view.ReportController', {
     },
 
     onConfigureClick: function () {
-        var dialog = Ext.create('Traccar.view.ReportConfigDialog');
+        var dialog = Ext.create('Traccar.view.dialog.ReportConfig');
         dialog.lookupReference('eventTypeField').setHidden(this.lookupReference('reportTypeField').getValue() !== 'events');
         dialog.lookupReference('chartTypeField').setHidden(this.lookupReference('reportTypeField').getValue() !== 'chart');
         dialog.callingPanel = this;
@@ -110,8 +110,9 @@ Ext.define('Traccar.view.ReportController', {
     onReportClick: function (button) {
         var reportType, from, to, store, url;
 
-        reportType = this.lookupReference('reportTypeField').getValue();
+        this.getGrid().getSelectionModel().deselectAll();
 
+        reportType = this.lookupReference('reportTypeField').getValue();
         if (reportType && (this.deviceId || this.groupId)) {
             from = new Date(
                 this.fromDate.getFullYear(), this.fromDate.getMonth(), this.fromDate.getDate(),
@@ -462,6 +463,10 @@ Ext.define('Traccar.view.ReportController', {
         text: Strings.reportEngineHours,
         dataIndex: 'engineHours',
         renderer: Traccar.AttributeFormatter.getFormatter('hours')
+    }, {
+        text: Strings.reportSpentFuel,
+        dataIndex: 'spentFuel',
+        renderer: Traccar.AttributeFormatter.getFormatter('spentFuel')
     }],
 
     tripsColumns: [{

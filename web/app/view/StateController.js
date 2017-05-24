@@ -24,7 +24,7 @@ Ext.define('Traccar.view.StateController', {
        'Traccar.model.Attribute',
        'Traccar.model.AttributeAlias',
        'Traccar.model.Position',
-       'Traccar.view.AttributeAliasDialog'
+       'Traccar.view.dialog.AttributeAlias'
 
     ],
 
@@ -124,15 +124,13 @@ Ext.define('Traccar.view.StateController', {
                     if (aliasIndex !== -1) {
                         name = this.aliasesStore.getAt(aliasIndex).get('alias');
                     } else {
-                        name = key.replace(/^./, function (match) {
-                            return match.toUpperCase();
-                        });
+                        name = Ext.getStore('PositionAttributes').getAttributeName(key, true);
                     }
                     store.add(Ext.create('Traccar.model.Attribute', {
                         priority: 1024,
                         name: name,
                         attribute: key,
-                        value: Traccar.AttributeFormatter.getFormatter(key)(attributes[key])
+                        value: Traccar.AttributeFormatter.getAttributeFormatter(key)(attributes[key])
                     }));
                 }
             }
@@ -167,8 +165,10 @@ Ext.define('Traccar.view.StateController', {
     },
 
     clearReport: function (store) {
-        this.position = null;
-        Ext.getStore('Attributes').removeAll();
+        if (!this.deviceId) {
+            this.position = null;
+            Ext.getStore('Attributes').removeAll();
+        }
     },
 
     onSelectionChange: function (selected, records) {
@@ -190,7 +190,7 @@ Ext.define('Traccar.view.StateController', {
             });
             attributeAlias.store = this.aliasesStore;
         }
-        dialog = Ext.create('Traccar.view.AttributeAliasDialog');
+        dialog = Ext.create('Traccar.view.dialog.AttributeAlias');
         dialog.down('form').loadRecord(attributeAlias);
         dialog.show();
     },

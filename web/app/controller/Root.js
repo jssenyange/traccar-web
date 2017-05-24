@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Anton Tananaev (anton@traccar.org)
+ * Copyright 2015 - 2017 Anton Tananaev (anton@traccar.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,15 @@ Ext.define('Traccar.controller.Root', {
     extend: 'Ext.app.Controller',
 
     requires: [
-        'Traccar.view.Login',
+        'Traccar.view.dialog.Login',
         'Traccar.view.Main',
         'Traccar.view.MainMobile',
         'Traccar.model.Position'
     ],
+
+    init: function () {
+        Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+    },
 
     onLaunch: function () {
         Ext.Ajax.request({
@@ -80,6 +84,7 @@ Ext.define('Traccar.controller.Root', {
         Ext.getStore('Geofences').load();
         Ext.getStore('Calendars').load();
         Ext.getStore('AttributeAliases').load();
+        Ext.getStore('ComputedAttributes').load();
         this.initReportEventTypesStore();
         Ext.getStore('Devices').load({
             scope: this,
@@ -110,9 +115,9 @@ Ext.define('Traccar.controller.Root', {
         this.beepSound.play();
     },
 
-    mutePressed: function () {
-        var muteButton = Ext.getCmp('muteButton');
-        return muteButton && !muteButton.pressed;
+    soundPressed: function () {
+        var soundButton = Ext.getCmp('soundButton');
+        return soundButton && soundButton.pressed;
     },
 
     removeUrlParameter: function (param) {
@@ -138,6 +143,11 @@ Ext.define('Traccar.controller.Root', {
                 url: 'api/devices',
                 success: function (response) {
                     self.updateDevices(Ext.decode(response.responseText));
+                },
+                failure: function (response) {
+                    if (response.status === 401) {
+                        window.location.reload();
+                    }
                 }
             });
 
@@ -214,6 +224,8 @@ Ext.define('Traccar.controller.Root', {
             } else if (array[i].type === 'alarm') {
                 alarmKey = 'alarm' + array[i].attributes.alarm.charAt(0).toUpperCase() + array[i].attributes.alarm.slice(1);
                 text = Strings[alarmKey] || alarmKey;
+            } else if (array[i].type === 'textMessage') {
+                text = Strings.eventTextMessage + ': ' + array[i].attributes.message;
             } else {
                 text = Traccar.app.getEventString(array[i].type);
             }
@@ -225,7 +237,7 @@ Ext.define('Traccar.controller.Root', {
             }
             device = Ext.getStore('Devices').getById(array[i].deviceId);
             if (device) {
-                if (this.mutePressed()) {
+                if (this.soundPressed()) {
                     this.beep();
                 }
                 Ext.toast(text, device.get('name'), 'br');

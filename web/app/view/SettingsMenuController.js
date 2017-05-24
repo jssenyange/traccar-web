@@ -20,17 +20,18 @@ Ext.define('Traccar.view.SettingsMenuController', {
     alias: 'controller.settings',
 
     requires: [
-        'Traccar.view.LoginController',
-        'Traccar.view.UserDialog',
-        'Traccar.view.ServerDialog',
-        'Traccar.view.Users',
-        'Traccar.view.Groups',
-        'Traccar.view.Geofences',
+        'Traccar.view.dialog.LoginController',
+        'Traccar.view.dialog.User',
+        'Traccar.view.dialog.Server',
+        'Traccar.view.edit.Users',
+        'Traccar.view.edit.Groups',
+        'Traccar.view.edit.Geofences',
         'Traccar.view.Notifications',
-        'Traccar.view.AttributeAliases',
+        'Traccar.view.edit.AttributeAliases',
+        'Traccar.view.edit.ComputedAttributes',
         'Traccar.view.Statistics',
-        'Traccar.view.DeviceDistanceDialog',
-        'Traccar.view.Calendars',
+        'Traccar.view.dialog.DeviceDistance',
+        'Traccar.view.edit.Calendars',
         'Traccar.view.BaseWindow'
     ],
 
@@ -57,11 +58,12 @@ Ext.define('Traccar.view.SettingsMenuController', {
         }
         if (admin || (!deviceReadonly && !readonly)) {
             this.lookupReference('settingsAttributeAliasesButton').setHidden(false);
+            this.lookupReference('settingsComputedAttributesButton').setHidden(false);
         }
     },
 
     onUserClick: function () {
-        var dialog = Ext.create('Traccar.view.UserDialog', {
+        var dialog = Ext.create('Traccar.view.dialog.User', {
             selfEdit: true
         });
         dialog.down('form').loadRecord(Traccar.app.getUser());
@@ -90,7 +92,7 @@ Ext.define('Traccar.view.SettingsMenuController', {
     },
 
     onServerClick: function () {
-        var dialog = Ext.create('Traccar.view.ServerDialog');
+        var dialog = Ext.create('Traccar.view.dialog.Server');
         dialog.down('form').loadRecord(Traccar.app.getServer());
         dialog.show();
     },
@@ -127,6 +129,16 @@ Ext.define('Traccar.view.SettingsMenuController', {
         }).show();
     },
 
+    onComputedAttributesClick: function () {
+        Ext.create('Traccar.view.BaseWindow', {
+            title: Strings.sharedComputedAttributes,
+            modal: false,
+            items: {
+                xtype: 'computedAttributesView'
+            }
+        }).show();
+    },
+
     onStatisticsClick: function () {
         Ext.create('Traccar.view.BaseWindow', {
             title: Strings.statisticsTitle,
@@ -138,7 +150,7 @@ Ext.define('Traccar.view.SettingsMenuController', {
     },
 
     onDeviceDistanceClick: function () {
-        var dialog = Ext.create('Traccar.view.DeviceDistanceDialog');
+        var dialog = Ext.create('Traccar.view.dialog.DeviceDistance');
         dialog.show();
     },
 
@@ -153,6 +165,6 @@ Ext.define('Traccar.view.SettingsMenuController', {
     },
 
     onLogoutClick: function () {
-        Ext.create('Traccar.view.LoginController').logout();
+        Ext.create('Traccar.view.dialog.LoginController').logout();
     }
 });
