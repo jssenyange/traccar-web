@@ -38,8 +38,10 @@ Ext.define('Traccar.Application', {
         'AttributeAlias',
         'ReportSummary',
         'ReportTrip',
+        'ReportStop',
         'Calendar',
-        'KnownAttribute'
+        'KnownAttribute',
+        'Driver'
     ],
 
     stores: [
@@ -49,6 +51,7 @@ Ext.define('Traccar.Application', {
         'AllDevices',
         'Positions',
         'LatestPositions',
+        'EventPositions',
         'Users',
         'Attributes',
         'MapTypes',
@@ -68,6 +71,7 @@ Ext.define('Traccar.Application', {
         'ReportRoute',
         'ReportEvents',
         'ReportTrips',
+        'ReportStops',
         'ReportSummary',
         'ReportTypes',
         'ReportEventTypes',
@@ -87,7 +91,9 @@ Ext.define('Traccar.Application', {
         'ComputedAttributes',
         'AllComputedAttributes',
         'PositionAttributes',
-        'AttributeValueTypes'
+        'AttributeValueTypes',
+        'Drivers',
+        'AllDrivers'
     ],
 
     controllers: [
@@ -107,6 +113,13 @@ Ext.define('Traccar.Application', {
         var rootPanel = Ext.getCmp('rootPanel');
         if (rootPanel) {
             rootPanel.setActiveItem(show ? 1 : 0);
+        }
+    },
+
+    showEvents: function (show) {
+        var rootPanel = Ext.getCmp('rootPanel');
+        if (rootPanel) {
+            rootPanel.setActiveItem(show ? 2 : 0);
         }
     },
 
@@ -176,5 +189,14 @@ Ext.define('Traccar.Application', {
         } else {
             Ext.Msg.alert(Strings.errorTitle, Strings.errorConnection);
         }
+    },
+
+    showToast: function (message, title) {
+        Ext.toast({
+            html: message,
+            title: title,
+            width: Traccar.Style.toastWidth,
+            align: 'br'
+        });
     }
 });

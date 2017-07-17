@@ -18,12 +18,24 @@
 Ext.define('Traccar.AttributeFormatter', {
     singleton: true,
 
+    numberFormatterFactory: function (precision, suffix) {
+        return function (value) {
+            if (value !== undefined) {
+                return Number(value.toFixed(precision)) + ' ' + suffix;
+            }
+        };
+    },
+
     coordinateFormatter: function (key, value) {
         return Ext.getStore('CoordinateFormats').formatValue(key, value, Traccar.app.getPreference('coordinateFormat'));
     },
 
     speedFormatter: function (value) {
         return Ext.getStore('SpeedUnits').formatValue(value, Traccar.app.getPreference('speedUnit'));
+    },
+
+    speedConverter: function (value) {
+        return Ext.getStore('SpeedUnits').convertValue(value, Traccar.app.getPreference('speedUnit'));
     },
 
     courseFormatter: function (value) {
@@ -35,29 +47,8 @@ Ext.define('Traccar.AttributeFormatter', {
         return Ext.getStore('DistanceUnits').formatValue(value, Traccar.app.getPreference('distanceUnit'));
     },
 
-    voltageFormatter: function (value) {
-        return Number(value.toFixed(Traccar.Style.numberPrecision)) + ' ' + Strings.sharedVoltAbbreviation;
-    },
-
-    percentageFormatter: function (value) {
-        return Number(value.toFixed(Traccar.Style.numberPrecision)) + ' &#37;';
-    },
-
-    temperatureFormatter: function (value) {
-        return Number(value.toFixed(Traccar.Style.numberPrecision)) + ' &deg;C';
-    },
-
-    volumeFormatter: function (value) {
-        return Number(value.toFixed(Traccar.Style.numberPrecision)) + ' ' + Strings.sharedLiterAbbreviation;
-    },
-
-    consumptionFormatter: function (value) {
-        return Number(value.toFixed(Traccar.Style.numberPrecision)) + ' ' + Strings.sharedLiterPerHourAbbreviation;
-    },
-
-    hoursFormatter: function (value) {
-        var hours = Math.round(value / 3600000);
-        return (hours + ' ' + Strings.sharedHourAbbreviation);
+    distanceConverter: function (value) {
+        return Ext.getStore('DistanceUnits').convertValue(value, Traccar.app.getPreference('distanceUnit'));
     },
 
     durationFormatter: function (value) {
@@ -69,6 +60,62 @@ Ext.define('Traccar.AttributeFormatter', {
 
     deviceIdFormatter: function (value) {
         return Ext.getStore('Devices').getById(value).get('name');
+    },
+
+    groupIdFormatter: function (value) {
+        var group, store;
+        if (value !== 0) {
+            store = Ext.getStore('AllGroups');
+            if (store.getTotalCount() === 0) {
+                store = Ext.getStore('Groups');
+            }
+            group = store.getById(value);
+            return group ? group.get('name') : value;
+        }
+    },
+
+    geofenceIdFormatter: function (value) {
+        var geofence, store;
+        if (value !== 0) {
+            store = Ext.getStore('AllGeofences');
+            if (store.getTotalCount() === 0) {
+                store = Ext.getStore('Geofences');
+            }
+            geofence = store.getById(value);
+            return geofence ? geofence.get('name') : value;
+        }
+    },
+
+    driverUniqueIdFormatter: function (value) {
+        var driver, store;
+        if (value !== 0) {
+            store = Ext.getStore('AllDrivers');
+            if (store.getTotalCount() === 0) {
+                store = Ext.getStore('Drivers');
+            }
+            driver = store.findRecord('uniqueId', value, 0, false, true, true);
+            return driver ? value + ' (' + driver.get('name') + ')' : value;
+        }
+    },
+
+    lastUpdateFormatter: function (value) {
+        var seconds, interval;
+
+        if (value) {
+            seconds = Math.floor((new Date() - value) / 1000);
+            if (seconds < 0) {
+                seconds = 0;
+            }
+            interval = Math.floor(seconds / 86400);
+            if (interval > 1) {
+                return interval + ' ' + Strings.sharedDays;
+            }
+            interval = Math.floor(seconds / 3600);
+            if (interval > 1) {
+                return interval + ' ' + Strings.sharedHours;
+            }
+            return Math.floor(seconds / 60) + ' ' + Strings.sharedMinutes;
+        }
     },
 
     defaultFormatter: function (value) {
@@ -98,14 +145,34 @@ Ext.define('Traccar.AttributeFormatter', {
             return this.courseFormatter;
         } else if (key === 'distance' || key === 'accuracy') {
             return this.distanceFormatter;
-        } else if (key === 'hours') {
-            return this.hoursFormatter;
         } else if (key === 'duration') {
             return this.durationFormatter;
         } else if (key === 'deviceId') {
             return this.deviceIdFormatter;
+        } else if (key === 'groupId') {
+            return this.groupIdFormatter;
+        } else if (key === 'geofenceId') {
+            return this.geofenceIdFormatter;
+        } else if (key === 'lastUpdate') {
+            return this.lastUpdateFormatter;
+        } else if (key === 'spentFuel') {
+            return this.numberFormatterFactory(Traccar.Style.numberPrecision, Strings.sharedLiterAbbreviation);
+        } else if (key === 'driverUniqueId') {
+            return this.driverUniqueIdFormatter;
         } else {
             return this.defaultFormatter;
+        }
+    },
+
+    getConverter: function (key) {
+        if (key === 'speed') {
+            return this.speedConverter;
+        } else if (key === 'distance' || key === 'accuracy') {
+            return this.distanceConverter;
+        } else {
+            return function (value) {
+                return value;
+            };
         }
     },
 
@@ -118,18 +185,39 @@ Ext.define('Traccar.AttributeFormatter', {
                 return this.distanceFormatter;
             } else if (dataType === 'speed') {
                 return this.speedFormatter;
+            } else if (dataType === 'driverUniqueId') {
+                return this.driverUniqueIdFormatter;
             } else if (dataType === 'voltage') {
-                return this.voltageFormatter;
+                return this.numberFormatterFactory(Traccar.Style.numberPrecision, Strings.sharedVoltAbbreviation);
             } else if (dataType === 'percentage') {
-                return this.percentageFormatter;
+                return this.numberFormatterFactory(Traccar.Style.numberPrecision, '&#37;');
             } else if (dataType === 'temperature') {
-                return this.temperatureFormatter;
+                return this.numberFormatterFactory(Traccar.Style.numberPrecision, '&deg;C');
             } else if (dataType === 'volume') {
-                return this.volumeFormatter;
+                return this.numberFormatterFactory(Traccar.Style.numberPrecision, Strings.sharedLiterAbbreviation);
             } else if (dataType === 'consumption') {
-                return this.consumptionFormatter;
+                return this.numberFormatterFactory(Traccar.Style.numberPrecision, Strings.sharedLiterPerHourAbbreviation);
             } else {
                 return this.defaultFormatter;
+            }
+        }
+    },
+
+    getAttributeConverter: function (key) {
+        var dataType = Ext.getStore('PositionAttributes').getAttributeDataType(key);
+        if (!dataType) {
+            return function (value) {
+                return value;
+            };
+        } else {
+            if (dataType === 'distance') {
+                return this.distanceConverter;
+            } else if (dataType === 'speed') {
+                return this.speedConverter;
+            } else {
+                return function (value) {
+                    return value;
+                };
             }
         }
     }

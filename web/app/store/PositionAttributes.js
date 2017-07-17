@@ -62,7 +62,7 @@ Ext.define('Traccar.store.PositionAttributes', {
         valueType: 'string'
     }, {
         key: 'alarm',
-        name: Strings.alarm,
+        name: Strings.positionAlarm,
         valueType: 'string'
     }, {
         key: 'status',
@@ -120,10 +120,6 @@ Ext.define('Traccar.store.PositionAttributes', {
         name: Strings.positionFuelConsumption,
         valueType: 'number',
         dataType: 'consumption'
-    }, {
-        key: 'rfid',
-        name: Strings.positionRfid,
-        valueType: 'string'
     }, {
         key: 'versionFw',
         name: Strings.positionVersionFw,
@@ -185,7 +181,7 @@ Ext.define('Traccar.store.PositionAttributes', {
     }, {
         key: 'motion',
         name: Strings.positionMotion,
-        valueType: 'number'
+        valueType: 'boolean'
     }, {
         key: 'armed',
         name: Strings.positionArmed,
@@ -233,6 +229,11 @@ Ext.define('Traccar.store.PositionAttributes', {
         key: 'result',
         name: Strings.eventCommandResult,
         valueType: 'string'
+    }, {
+        key: 'driverUniqueId',
+        name: Strings.positionDriverUniqueId,
+        valueType: 'string',
+        dataType: 'driverUniqueId'
     }],
 
     getAttributeName: function (key, capitalize) {

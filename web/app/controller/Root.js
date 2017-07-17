@@ -26,7 +26,31 @@ Ext.define('Traccar.controller.Root', {
     ],
 
     init: function () {
+        var i, data, attribute, chartTypesStore = Ext.getStore('ReportChartTypes');
         Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+        data = Ext.getStore('PositionAttributes').getData().items;
+        for (i = 0; i < data.length; i++) {
+            attribute = data[i];
+            Traccar.model.Position.addFields([{
+                name: 'attribute.' + attribute.get('key'),
+                attributeKey: attribute.get('key'),
+                calculate: this.calculateAttribute,
+                persist: false
+            }]);
+            if (attribute.get('valueType') === 'number') {
+                chartTypesStore.add({
+                    key: 'attribute.' + attribute.get('key'),
+                    name: attribute.get('name')
+                });
+            }
+        }
+    },
+
+    calculateAttribute: function (data) {
+        var value = data.attributes[this.attributeKey];
+        if (value !== undefined) {
+            return Traccar.AttributeFormatter.getAttributeConverter(this.attributeKey)(value);
+        }
     },
 
     onLaunch: function () {
@@ -81,6 +105,7 @@ Ext.define('Traccar.controller.Root', {
     loadApp: function () {
         var attribution, eventId;
         Ext.getStore('Groups').load();
+        Ext.getStore('Drivers').load();
         Ext.getStore('Geofences').load();
         Ext.getStore('Calendars').load();
         Ext.getStore('AttributeAliases').load();
@@ -137,7 +162,7 @@ Ext.define('Traccar.controller.Root', {
         socket = new WebSocket(protocol + '//' + window.location.host + pathname + 'api/socket');
 
         socket.onclose = function (event) {
-            Ext.toast(Strings.errorSocket, Strings.errorTitle, 'br');
+            Traccar.app.showToast(Strings.errorSocket, Strings.errorTitle);
 
             Ext.Ajax.request({
                 url: 'api/devices',
@@ -190,7 +215,8 @@ Ext.define('Traccar.controller.Root', {
             if (entity) {
                 entity.set({
                     status: array[i].status,
-                    lastUpdate: array[i].lastUpdate
+                    lastUpdate: array[i].lastUpdate,
+                    geofenceIds: array[i].geofenceIds
                 }, {
                     dirty: false
                 });
@@ -208,6 +234,9 @@ Ext.define('Traccar.controller.Root', {
             } else {
                 store.add(Ext.create('Traccar.model.Position', array[i]));
             }
+            if (Ext.getStore('Events').findRecord('positionId', array[i].id, 0, false, false, true)) {
+                Ext.getStore('EventPositions').add(Ext.create('Traccar.model.Position', array[i]));
+            }
         }
         if (first) {
             this.zoomToAllDevices();
@@ -215,32 +244,16 @@ Ext.define('Traccar.controller.Root', {
     },
 
     updateEvents: function (array) {
-        var i, store, device, alarmKey, text, geofence;
+        var i, store, device;
         store = Ext.getStore('Events');
         for (i = 0; i < array.length; i++) {
             store.add(array[i]);
-            if (array[i].type === 'commandResult') {
-                text = Strings.eventCommandResult + ': ' + array[i].attributes.result;
-            } else if (array[i].type === 'alarm') {
-                alarmKey = 'alarm' + array[i].attributes.alarm.charAt(0).toUpperCase() + array[i].attributes.alarm.slice(1);
-                text = Strings[alarmKey] || alarmKey;
-            } else if (array[i].type === 'textMessage') {
-                text = Strings.eventTextMessage + ': ' + array[i].attributes.message;
-            } else {
-                text = Traccar.app.getEventString(array[i].type);
-            }
-            if (array[i].geofenceId !== 0) {
-                geofence = Ext.getStore('Geofences').getById(array[i].geofenceId);
-                if (geofence) {
-                    text += ' \"' + geofence.get('name') + '"';
-                }
-            }
             device = Ext.getStore('Devices').getById(array[i].deviceId);
             if (device) {
                 if (this.soundPressed()) {
                     this.beep();
                 }
-                Ext.toast(text, device.get('name'), 'br');
+                Traccar.app.showToast(array[i].text, device.get('name'));
             }
         }
     },

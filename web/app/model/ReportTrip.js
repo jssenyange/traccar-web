@@ -28,13 +28,16 @@ Ext.define('Traccar.model.ReportTrip', {
         type: 'string'
     }, {
         name: 'maxSpeed',
-        type: 'float'
+        type: 'float',
+        convert: Traccar.AttributeFormatter.getConverter('speed')
     }, {
         name: 'averageSpeed',
-        type: 'float'
+        type: 'float',
+        convert: Traccar.AttributeFormatter.getConverter('speed')
     }, {
         name: 'distance',
-        type: 'float'
+        type: 'float',
+        convert: Traccar.AttributeFormatter.getConverter('distance')
     }, {
         name: 'duration',
         type: 'int'
@@ -51,6 +54,12 @@ Ext.define('Traccar.model.ReportTrip', {
         dateFormat: 'c'
     }, {
         name: 'endAddress',
+        type: 'string'
+    }, {
+        name: 'driverUniqueId',
+        type: 'string'
+    }, {
+        name: 'driverName',
         type: 'string'
     }]
 });

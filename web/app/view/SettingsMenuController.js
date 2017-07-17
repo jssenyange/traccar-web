@@ -26,6 +26,7 @@ Ext.define('Traccar.view.SettingsMenuController', {
         'Traccar.view.edit.Users',
         'Traccar.view.edit.Groups',
         'Traccar.view.edit.Geofences',
+        'Traccar.view.edit.Drivers',
         'Traccar.view.Notifications',
         'Traccar.view.edit.AttributeAliases',
         'Traccar.view.edit.ComputedAttributes',
@@ -55,6 +56,7 @@ Ext.define('Traccar.view.SettingsMenuController', {
             this.lookupReference('settingsGeofencesButton').setHidden(false);
             this.lookupReference('settingsNotificationsButton').setHidden(false);
             this.lookupReference('settingsCalendarsButton').setHidden(false);
+            this.lookupReference('settingsDriversButton').setHidden(false);
         }
         if (admin || (!deviceReadonly && !readonly)) {
             this.lookupReference('settingsAttributeAliasesButton').setHidden(false);
@@ -74,7 +76,6 @@ Ext.define('Traccar.view.SettingsMenuController', {
     onGroupsClick: function () {
         Ext.create('Traccar.view.BaseWindow', {
             title: Strings.settingsGroups,
-            modal: false,
             items: {
                 xtype: 'groupsView'
             }
@@ -84,7 +85,6 @@ Ext.define('Traccar.view.SettingsMenuController', {
     onGeofencesClick: function () {
         Ext.create('Traccar.view.BaseWindow', {
             title: Strings.sharedGeofences,
-            modal: false,
             items: {
                 xtype: 'geofencesView'
             }
@@ -100,7 +100,6 @@ Ext.define('Traccar.view.SettingsMenuController', {
     onUsersClick: function () {
         Ext.create('Traccar.view.BaseWindow', {
             title: Strings.settingsUsers,
-            modal: false,
             items: {
                 xtype: 'usersView'
             }
@@ -111,7 +110,6 @@ Ext.define('Traccar.view.SettingsMenuController', {
         var user = Traccar.app.getUser();
         Ext.create('Traccar.view.BaseWindow', {
             title: Strings.sharedNotifications,
-            modal: false,
             items: {
                 xtype: 'notificationsView',
                 user: user
@@ -122,7 +120,6 @@ Ext.define('Traccar.view.SettingsMenuController', {
     onAttributeAliasesClick: function () {
         Ext.create('Traccar.view.BaseWindow', {
             title: Strings.sharedAttributeAliases,
-            modal: false,
             items: {
                 xtype: 'attributeAliasesView'
             }
@@ -132,7 +129,6 @@ Ext.define('Traccar.view.SettingsMenuController', {
     onComputedAttributesClick: function () {
         Ext.create('Traccar.view.BaseWindow', {
             title: Strings.sharedComputedAttributes,
-            modal: false,
             items: {
                 xtype: 'computedAttributesView'
             }
@@ -142,7 +138,6 @@ Ext.define('Traccar.view.SettingsMenuController', {
     onStatisticsClick: function () {
         Ext.create('Traccar.view.BaseWindow', {
             title: Strings.statisticsTitle,
-            modal: false,
             items: {
                 xtype: 'statisticsView'
             }
@@ -157,9 +152,17 @@ Ext.define('Traccar.view.SettingsMenuController', {
     onCalendarsClick: function () {
         Ext.create('Traccar.view.BaseWindow', {
             title: Strings.sharedCalendars,
-            modal: false,
             items: {
                 xtype: 'calendarsView'
+            }
+        }).show();
+    },
+
+    onDriversClick: function () {
+        Ext.create('Traccar.view.BaseWindow', {
+            title: Strings.sharedDrivers,
+            items: {
+                xtype: 'driversView'
             }
         }).show();
     },

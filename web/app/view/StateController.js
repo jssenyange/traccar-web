@@ -101,7 +101,7 @@ Ext.define('Traccar.view.StateController', {
     },
 
     updatePosition: function () {
-        var attributes, store, key, aliasIndex, name;
+        var attributes, store, key, aliasIndex, name, value;
         store = Ext.getStore('Attributes');
         store.removeAll();
 
@@ -126,11 +126,16 @@ Ext.define('Traccar.view.StateController', {
                     } else {
                         name = Ext.getStore('PositionAttributes').getAttributeName(key, true);
                     }
+                    if (this.position.get('attribute.' + key) !== undefined) {
+                        value = Traccar.AttributeFormatter.getAttributeFormatter(key)(this.position.get('attribute.' + key));
+                    } else {
+                        value = Traccar.AttributeFormatter.defaultFormatter(attributes[key]);
+                    }
                     store.add(Ext.create('Traccar.model.Attribute', {
                         priority: 1024,
                         name: name,
                         attribute: key,
-                        value: Traccar.AttributeFormatter.getAttributeFormatter(key)(attributes[key])
+                        value: value
                     }));
                 }
             }
@@ -171,8 +176,8 @@ Ext.define('Traccar.view.StateController', {
         }
     },
 
-    onSelectionChange: function (selected, records) {
-        var enabled = selected.getCount() > 0 && records[0].get('priority') === 1024;
+    onSelectionChange: function (selection, selected) {
+        var enabled = selected.length > 0 && selected[0].get('priority') === 1024;
         this.lookupReference('aliasEditButton').setDisabled(!enabled);
     },
 
