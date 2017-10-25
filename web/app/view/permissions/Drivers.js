@@ -16,15 +16,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-Ext.define('Traccar.view.permissions.GroupDrivers', {
+Ext.define('Traccar.view.permissions.Drivers', {
     extend: 'Traccar.view.permissions.Base',
-    xtype: 'groupDriversView',
-
-    requires: [
-        'Ext.grid.filters.Filters'
-    ],
-
-    plugins: 'gridfilters',
+    xtype: 'linkDriversView',
 
     columns: {
         items: [{

@@ -1,5 +1,6 @@
 /*
- * Copyright 2016 - 2017 Anton Tananaev (anton@traccar.org)
+ * Copyright 2017 Anton Tananaev (anton@traccar.org)
+ * Copyright 2017 Andrey Kunitsyn (andrey@traccar.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,24 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+Ext.define('Traccar.view.MainController', {
+    extend: 'Ext.app.ViewController',
+    alias: 'controller.mainController',
 
-Ext.define('Traccar.view.permissions.UserGeofences', {
-    extend: 'Traccar.view.permissions.Base',
-    xtype: 'userGeofencesView',
-
-    requires: [
-        'Ext.grid.filters.Filters'
-    ],
-
-    plugins: 'gridfilters',
-
-    columns: {
-        items: [{
-            text: Strings.sharedName,
-            dataIndex: 'name',
-            flex: 1,
-            minWidth: Traccar.Style.columnWidthNormal,
-            filter: 'string'
-        }]
+    init: function () {
+        this.lookupReference('reportView').setHidden(Traccar.app.getBooleanAttributePreference('ui.disableReport'));
     }
 });

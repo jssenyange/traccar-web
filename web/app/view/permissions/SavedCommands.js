@@ -16,15 +16,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-Ext.define('Traccar.view.permissions.UserAttributes', {
+Ext.define('Traccar.view.permissions.SavedCommands', {
     extend: 'Traccar.view.permissions.Base',
-    xtype: 'userAttributesView',
-
-    requires: [
-        'Ext.grid.filters.Filters'
-    ],
-
-    plugins: 'gridfilters',
+    xtype: 'linkSavedCommandsView',
 
     columns: {
         items: [{
@@ -34,18 +28,23 @@ Ext.define('Traccar.view.permissions.UserAttributes', {
             minWidth: Traccar.Style.columnWidthNormal,
             filter: 'string'
         }, {
-            text: Strings.sharedAttribute,
-            dataIndex: 'attribute',
+            text: Strings.sharedType,
+            dataIndex: 'type',
             flex: 1,
             minWidth: Traccar.Style.columnWidthNormal,
             filter: {
                 type: 'list',
+                idField: 'type',
                 labelField: 'name',
-                store: 'PositionAttributes'
+                store: 'AllCommandTypes'
             },
-            renderer: function (value) {
-                return Ext.getStore('PositionAttributes').getAttributeName(value);
-            }
+            renderer: Traccar.AttributeFormatter.getFormatter('commandType')
+        }, {
+            text: Strings.notificationSms,
+            dataIndex: 'textChannel',
+            flex: 1,
+            minWidth: Traccar.Style.columnWidthNormal,
+            filter: 'boolean'
         }]
     }
 });

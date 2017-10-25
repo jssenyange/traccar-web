@@ -17,11 +17,10 @@
  */
 
 Ext.define('Traccar.view.edit.Users', {
-    extend: 'Ext.grid.Panel',
+    extend: 'Traccar.view.GridPanel',
     xtype: 'usersView',
 
     requires: [
-        'Ext.grid.filters.Filters',
         'Traccar.view.edit.UsersController',
         'Traccar.view.edit.Toolbar'
     ],
@@ -29,10 +28,9 @@ Ext.define('Traccar.view.edit.Users', {
     controller: 'users',
     store: 'Users',
 
-    plugins: 'gridfilters',
-
     tbar: {
         xtype: 'editToolbar',
+        scrollable: true,
         items: [{
             disabled: true,
             handler: 'onGeofencesClick',
@@ -89,6 +87,14 @@ Ext.define('Traccar.view.edit.Users', {
             glyph: 'xf2c2@FontAwesome',
             tooltip: Strings.sharedDrivers,
             tooltipType: 'title'
+        }, {
+            xtype: 'button',
+            disabled: true,
+            handler: 'onCommandsClick',
+            reference: 'userCommandsButton',
+            glyph: 'xf093@FontAwesome',
+            tooltip: Strings.sharedSavedCommands,
+            tooltipType: 'title'
         }]
     },
 
@@ -112,20 +118,24 @@ Ext.define('Traccar.view.edit.Users', {
         }, {
             text: Strings.userAdmin,
             dataIndex: 'admin',
+            renderer: Traccar.AttributeFormatter.getFormatter('admin'),
             filter: 'boolean'
         }, {
             text: Strings.serverReadonly,
             dataIndex: 'readonly',
             hidden: true,
+            renderer: Traccar.AttributeFormatter.getFormatter('readonly'),
             filter: 'boolean'
         }, {
             text: Strings.userDeviceReadonly,
             dataIndex: 'deviceReadonly',
+            renderer: Traccar.AttributeFormatter.getFormatter('deviceReadonly'),
             hidden: true,
             filter: 'boolean'
         }, {
             text: Strings.userDisabled,
             dataIndex: 'disabled',
+            renderer: Traccar.AttributeFormatter.getFormatter('disabled'),
             filter: 'boolean'
         }, {
             text: Strings.userExpirationTime,

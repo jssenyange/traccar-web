@@ -1,5 +1,5 @@
-﻿(function () {
-    var debugMode, touchMode, locale, localeParameter, extjsVersion, proj4jsVersion, fontAwesomeVersion, olVersion, i, language, languages;
+(function () {
+    var debugMode, touchMode, locale, localeParameter, extjsVersion, proj4jsVersion, fontAwesomeVersion, olVersion, i, language, languages, languageDefault;
 
     function addStyleFile(file) {
         var link = document.createElement('link');
@@ -33,7 +33,9 @@
 
     locale.languages = {
         'ar': { name: 'العربية', code: 'en' },
+        'az': { name: 'Azərbaycanca', code: 'en' },
         'bg': { name: 'Български', code: 'bg' },
+        'bn': { name: 'বাংলা', code: 'en' },
         'cs': { name: 'Čeština', code: 'cs' },
         'de': { name: 'Deutsch', code: 'de' },
         'da': { name: 'Dansk', code: 'da' },
@@ -56,6 +58,7 @@
         'km': { name: 'ភាសាខ្មែរ', code: 'en' },
         'lo': { name: 'ລາວ', code: 'en' },
         'lt': { name: 'Lietuvių', code: 'lt' },
+        'lv': { name: 'Latviešu', code: 'lv' },
         'ml': { name: 'മലയാളം', code: 'en' },
         'ms': { name: 'بهاس ملايو', code: 'en' },
         'nb': { name: 'Norsk bokmål', code: 'no_NB' },
@@ -83,6 +86,7 @@
         'zh_TW': { name: '中文 (Taiwan)', code: 'zh_TW' }
     };
 
+    languageDefault = 'en';
     localeParameter = window.location.search.match(/locale=([^&#]+)/);
     locale.language = localeParameter && localeParameter[1];
     if (!(locale.language in locale.languages)) {
@@ -90,7 +94,7 @@
         language = window.navigator.userLanguage || window.navigator.language;
         languages.push(language);
         languages.push(language.substr(0, 2));
-        languages.push('en'); //default
+        languages.push(languageDefault);
         for (i = 0; i < languages.length; i++) {
             language = languages[i].replace('-', '_');
             if (language in locale.languages) {
@@ -109,23 +113,39 @@
         }
 
         Ext.Ajax.request({
-            url: 'l10n/' + Locale.language + '.json',
+            url: 'l10n/' + languageDefault + '.json',
             callback: function (options, success, response) {
                 window.Strings = Ext.decode(response.responseText);
-
-                if (debugMode) {
-                    addScriptFile('app.js');
+                if (Locale.language !== languageDefault) {
+                    Ext.Ajax.request({
+                        url: 'l10n/' + Locale.language + '.json',
+                        callback: function (options, success, response) {
+                            var key, data = Ext.decode(response.responseText);
+                            for (key in data) {
+                                if (data.hasOwnProperty(key)) {
+                                    window.Strings[key] = data[key];
+                                }
+                            }
+                            addScriptFile(debugMode ? 'app.js' : 'app.min.js');
+                        }
+                    });
                 } else {
-                    addScriptFile('app.min.js');
+                    addScriptFile(debugMode ? 'app.js' : 'app.min.js');
                 }
             }
         });
 
     });
 
+    // Hack for new versions of Android
+    if (navigator.userAgent.indexOf('Android') !== -1 && navigator.userAgent.indexOf('OPR') !== -1) {
+        var __originalUserAgent = navigator.userAgent;
+        navigator.__defineGetter__('userAgent', function () { return __originalUserAgent.replace(/\/OPR[^)]*/g, ''); });
+    }
+
     extjsVersion = '6.2.0';
     fontAwesomeVersion = '4.7.0';
-    olVersion = '4.2.0';
+    olVersion = '4.3.2';
     proj4jsVersion = '2.4.3';
 
     if (debugMode) {

@@ -17,7 +17,7 @@
 
 Ext.define('Traccar.model.Notification', {
     extend: 'Ext.data.Model',
-    idProperty: 'type',
+    identifier: 'negative',
 
     fields: [{
         name: 'id',
@@ -26,8 +26,8 @@ Ext.define('Traccar.model.Notification', {
         name: 'type',
         type: 'string'
     }, {
-        name: 'userId',
-        type: 'int'
+        name: 'always',
+        type: 'bool'
     }, {
         name: 'attributes'
     }, {

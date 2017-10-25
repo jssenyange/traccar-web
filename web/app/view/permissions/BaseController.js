@@ -24,11 +24,11 @@ Ext.define('Traccar.view.permissions.BaseController', {
         params[this.getView().baseObjectName] = this.getView().baseObject;
         linkStoreName = this.getView().linkStoreName;
         storeName = this.getView().storeName;
-        linkStoreName = (typeof linkStoreName === 'undefined') ? storeName : linkStoreName;
+        linkStoreName = typeof linkStoreName === 'undefined' ? storeName : linkStoreName;
         this.getView().setStore(Ext.getStore(storeName));
         this.getView().getStore().load({
             scope: this,
-            callback: function (records, operation, success) {
+            callback: function () {
                 var linkStore = Ext.create('Traccar.store.' + linkStoreName);
                 linkStore.load({
                     params: params,
@@ -47,13 +47,13 @@ Ext.define('Traccar.view.permissions.BaseController', {
         });
     },
 
-    onBeforeSelect: function (selection, record, index) {
+    onBeforeSelect: function (selection, record) {
         var data = {};
         data[this.getView().baseObjectName] = this.getView().baseObject;
         data[this.getView().linkObjectName] = record.getId();
         Ext.Ajax.request({
             scope: this,
-            url: this.getView().urlApi,
+            url: 'api/permissions',
             jsonData: Ext.util.JSON.encode(data),
             callback: function (options, success, response) {
                 if (!success) {
@@ -64,14 +64,14 @@ Ext.define('Traccar.view.permissions.BaseController', {
         });
     },
 
-    onBeforeDeselect: function (selection, record, index) {
+    onBeforeDeselect: function (selection, record) {
         var data = {};
         data[this.getView().baseObjectName] = this.getView().baseObject;
         data[this.getView().linkObjectName] = record.getId();
         Ext.Ajax.request({
             scope: this,
             method: 'DELETE',
-            url: this.getView().urlApi,
+            url: 'api/permissions',
             jsonData: Ext.util.JSON.encode(data),
             callback: function (options, success, response) {
                 if (!success) {

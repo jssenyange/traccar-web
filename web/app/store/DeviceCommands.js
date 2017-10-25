@@ -1,5 +1,6 @@
 /*
- * Copyright 2016 - 2017 Anton Tananaev (anton@traccar.org)
+ * Copyright 2017 Anton Tananaev (anton@traccar.org)
+ * Copyright 2017 Andrey Kunitsyn (andrey@traccar.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,23 +16,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-Ext.define('Traccar.view.permissions.DeviceGeofences', {
-    extend: 'Traccar.view.permissions.Base',
-    xtype: 'deviceGeofencesView',
+Ext.define('Traccar.store.DeviceCommands', {
+    extend: 'Ext.data.Store',
+    model: 'Traccar.model.Command',
 
-    requires: [
-        'Ext.grid.filters.Filters'
-    ],
-
-    plugins: 'gridfilters',
-
-    columns: {
-        items: [{
-            text: Strings.sharedName,
-            dataIndex: 'name',
-            flex: 1,
-            minWidth: Traccar.Style.columnWidthNormal,
-            filter: 'string'
-        }]
+    proxy: {
+        type: 'rest',
+        url: 'api/commands/send',
+        listeners: {
+            'exception': function (proxy, response) {
+                Traccar.app.showError(response);
+            }
+        }
     }
 });

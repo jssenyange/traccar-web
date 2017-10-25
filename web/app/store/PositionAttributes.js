@@ -57,6 +57,10 @@ Ext.define('Traccar.store.PositionAttributes', {
         name: Strings.positionGps,
         valueType: 'number'
     }, {
+        key: 'roaming',
+        name: Strings.positionRoaming,
+        valueType: 'boolean'
+    }, {
         key: 'event',
         name: Strings.positionEvent,
         valueType: 'string'
@@ -87,6 +91,10 @@ Ext.define('Traccar.store.PositionAttributes', {
         key: 'hours',
         name: Strings.positionHours,
         valueType: 'string'
+    }, {
+        key: 'steps',
+        name: Strings.positionSteps,
+        valueType: 'number'
     }, {
         key: 'input',
         name: Strings.positionInput,
@@ -240,14 +248,12 @@ Ext.define('Traccar.store.PositionAttributes', {
         var model = this.getById(key);
         if (model) {
             return model.get('name');
+        } else if (capitalize) {
+            return key.replace(/^./, function (match) {
+                return match.toUpperCase();
+            });
         } else {
-            if (capitalize) {
-                return key.replace(/^./, function (match) {
-                    return match.toUpperCase();
-                });
-            } else {
-                return key;
-            }
+            return key;
         }
     },
 

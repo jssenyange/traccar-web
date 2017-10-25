@@ -16,19 +16,17 @@
  */
 
 Ext.define('Traccar.view.edit.Devices', {
-    extend: 'Ext.grid.Panel',
+    extend: 'Traccar.view.GridPanel',
     xtype: 'devicesView',
 
     requires: [
-        'Ext.grid.filters.Filters',
         'Traccar.AttributeFormatter',
         'Traccar.view.edit.DevicesController',
-        'Traccar.view.ArrayListFilter'
+        'Traccar.view.ArrayListFilter',
+        'Traccar.view.DeviceMenu'
     ],
 
     controller: 'devices',
-
-    plugins: 'gridfilters',
 
     store: 'VisibleDevices',
 
@@ -37,67 +35,42 @@ Ext.define('Traccar.view.edit.Devices', {
 
     tbar: {
         componentCls: 'toolbar-header-style',
+        defaults: {
+            xtype: 'button',
+            disabled: true,
+            tooltipType: 'title'
+        },
         items: [{
             xtype: 'tbtext',
             html: Strings.deviceTitle,
             baseCls: 'x-panel-header-title-default'
         }, {
-            xtype: 'tbfill'
+            xtype: 'tbfill',
+            disabled: false
         }, {
-            xtype: 'button',
-            disabled: true,
             handler: 'onAddClick',
             reference: 'toolbarAddButton',
             glyph: 'xf067@FontAwesome',
-            tooltip: Strings.sharedAdd,
-            tooltipType: 'title'
+            tooltip: Strings.sharedAdd
         }, {
-            xtype: 'button',
-            disabled: true,
             handler: 'onEditClick',
             reference: 'toolbarEditButton',
             glyph: 'xf040@FontAwesome',
-            tooltip: Strings.sharedEdit,
-            tooltipType: 'title'
+            tooltip: Strings.sharedEdit
         }, {
-            xtype: 'button',
-            disabled: true,
             handler: 'onRemoveClick',
             reference: 'toolbarRemoveButton',
             glyph: 'xf00d@FontAwesome',
-            tooltip: Strings.sharedRemove,
-            tooltipType: 'title'
+            tooltip: Strings.sharedRemove
         }, {
-            xtype: 'button',
-            disabled: true,
-            handler: 'onGeofencesClick',
-            reference: 'toolbarGeofencesButton',
-            glyph: 'xf21d@FontAwesome',
-            tooltip: Strings.sharedGeofences,
-            tooltipType: 'title'
-        }, {
-            xtype: 'button',
-            disabled: true,
-            handler: 'onAttributesClick',
-            reference: 'toolbarAttributesButton',
-            glyph: 'xf0ae@FontAwesome',
-            tooltip: Strings.sharedComputedAttributes,
-            tooltipType: 'title'
-        }, {
-            xtype: 'button',
-            disabled: true,
-            handler: 'onDriversClick',
-            reference: 'toolbarDriversButton',
-            glyph: 'xf2c2@FontAwesome',
-            tooltip: Strings.sharedDrivers,
-            tooltipType: 'title'
-        }, {
-            disabled: true,
             handler: 'onCommandClick',
             reference: 'deviceCommandButton',
             glyph: 'xf093@FontAwesome',
-            tooltip: Strings.deviceCommand,
-            tooltipType: 'title'
+            tooltip: Strings.deviceCommand
+        }, {
+            xtype: 'deviceMenu',
+            reference: 'toolbarDeviceMenu',
+            enableToggle: false
         }]
     },
 
@@ -106,11 +79,13 @@ Ext.define('Traccar.view.edit.Devices', {
     },
 
     viewConfig: {
+        enableTextSelection: true,
         getRowClass: function (record) {
             var status = record.get('status');
             if (status) {
                 return Ext.getStore('DeviceStatuses').getById(status).get('color');
             }
+            return null;
         }
     },
 
@@ -160,10 +135,14 @@ Ext.define('Traccar.view.edit.Devices', {
                 store: 'Geofences'
             },
             renderer: function (value) {
-                var i, result = '';
-                for (i = 0; i < value.length; i++) {
-                    result += Traccar.AttributeFormatter.geofenceIdFormatter(value[i]);
-                    result += (i < value.length - 1) ? ', ' : '';
+                var i, name, result = '';
+                if (Ext.isArray(value)) {
+                    for (i = 0; i < value.length; i++) {
+                        name = Traccar.AttributeFormatter.geofenceIdFormatter(value[i]);
+                        if (name) {
+                            result += name + (i < value.length - 1 ? ', ' : '');
+                        }
+                    }
                 }
                 return result;
             }
@@ -183,6 +162,7 @@ Ext.define('Traccar.view.edit.Devices', {
                         return status.get('name');
                     }
                 }
+                return null;
             }
         }, {
             text: Strings.deviceLastUpdate,

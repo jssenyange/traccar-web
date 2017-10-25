@@ -16,17 +16,14 @@
  */
 
 Ext.define('Traccar.view.edit.Groups', {
-    extend: 'Ext.grid.Panel',
+    extend: 'Traccar.view.GridPanel',
     xtype: 'groupsView',
 
     requires: [
-        'Ext.grid.filters.Filters',
         'Traccar.AttributeFormatter',
         'Traccar.view.edit.GroupsController',
         'Traccar.view.edit.Toolbar'
     ],
-
-    plugins: 'gridfilters',
 
     controller: 'groups',
     store: 'Groups',
@@ -56,6 +53,22 @@ Ext.define('Traccar.view.edit.Groups', {
             reference: 'toolbarDriversButton',
             glyph: 'xf2c2@FontAwesome',
             tooltip: Strings.sharedDrivers,
+            tooltipType: 'title'
+        }, {
+            xtype: 'button',
+            disabled: true,
+            handler: 'onCommandsClick',
+            reference: 'toolbarCommandsButton',
+            glyph: 'xf093@FontAwesome',
+            tooltip: Strings.sharedSavedCommands,
+            tooltipType: 'title'
+        }, {
+            xtype: 'button',
+            disabled: true,
+            handler: 'onNotificationsClick',
+            reference: 'toolbarNotificationsButton',
+            glyph: 'xf003@FontAwesome',
+            tooltip: Strings.sharedNotifications,
             tooltipType: 'title'
         }]
     },
