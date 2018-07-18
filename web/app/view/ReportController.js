@@ -367,6 +367,7 @@ Ext.define('Traccar.view.ReportController', {
         Ext.Ajax.request({
             url: requestUrl,
             method: 'GET',
+            timeout: Traccar.Style.reportTimeout,
             params: requestParams,
             headers: {
                 Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -510,6 +511,10 @@ Ext.define('Traccar.view.ReportController', {
         text: Strings.sharedGeofence,
         dataIndex: 'geofenceId',
         renderer: Traccar.AttributeFormatter.getFormatter('geofenceId')
+    }, {
+        text: Strings.sharedMaintenance,
+        dataIndex: 'maintenanceId',
+        renderer: Traccar.AttributeFormatter.getFormatter('maintenanceId')
     }],
 
     summaryColumns: [{

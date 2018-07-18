@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Anton Tananaev (anton@traccar.org)
+ * Copyright 2016 - 2018 Anton Tananaev (anton@traccar.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,13 +31,10 @@ Ext.define('Traccar.model.Notification', {
     }, {
         name: 'attributes'
     }, {
-        name: 'web',
-        type: 'bool'
+        name: 'notificators',
+        type: 'string'
     }, {
-        name: 'mail',
-        type: 'bool'
-    }, {
-        name: 'sms',
-        type: 'bool'
+        name: 'calendarId',
+        type: 'int'
     }]
 });

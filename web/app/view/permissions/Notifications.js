@@ -1,6 +1,6 @@
 /*
- * Copyright 2017 Anton Tananaev (anton@traccar.org)
- * Copyright 2017 Andrey Kunitsyn (andrey@traccar.org)
+ * Copyright 2017 - 2018 Anton Tananaev (anton@traccar.org)
+ * Copyright 2017 - 2018 Andrey Kunitsyn (andrey@traccar.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,26 +42,37 @@ Ext.define('Traccar.view.permissions.Notifications', {
             renderer: Traccar.AttributeFormatter.getFormatter('always'),
             filter: 'boolean'
         }, {
-            text: Strings.notificationWeb,
-            dataIndex: 'web',
-            flex: 1,
-            minWidth: Traccar.Style.columnWidthNormal,
-            renderer: Traccar.AttributeFormatter.getFormatter('web'),
-            filter: 'boolean'
+            text: Strings.notificationNotificators,
+            dataIndex: 'notificators',
+            flex: 2,
+            filter: {
+                type: 'arraylist',
+                idField: 'type',
+                labelField: 'name',
+                store: 'AllNotificators'
+            },
+            renderer: function (value) {
+                var result = '', i, notificators;
+                if (value) {
+                    notificators = value.split(/[ ,]+/).filter(Boolean);
+                    for (i = 0; i < notificators.length; i++) {
+                        result += Traccar.app.getNotificatorString(notificators[i]) + (i < notificators.length - 1 ? ', ' : '');
+                    }
+                }
+                return result;
+            }
         }, {
-            text: Strings.notificationMail,
-            dataIndex: 'mail',
+            text: Strings.sharedCalendar,
+            dataIndex: 'calendarId',
             flex: 1,
             minWidth: Traccar.Style.columnWidthNormal,
-            renderer: Traccar.AttributeFormatter.getFormatter('mail'),
-            filter: 'boolean'
-        }, {
-            text: Strings.notificationSms,
-            dataIndex: 'sms',
-            flex: 1,
-            minWidth: Traccar.Style.columnWidthNormal,
-            renderer: Traccar.AttributeFormatter.getFormatter('sms'),
-            filter: 'boolean'
+            hidden: true,
+            filter: {
+                type: 'list',
+                labelField: 'name',
+                store: 'AllCalendars'
+            },
+            renderer: Traccar.AttributeFormatter.getFormatter('calendarId')
         }]
     }
 });
