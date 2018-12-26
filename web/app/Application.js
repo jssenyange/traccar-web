@@ -21,7 +21,8 @@ Ext.define('Traccar.Application', {
 
     requires: [
         'Traccar.Style',
-        'Traccar.AttributeFormatter'
+        'Traccar.AttributeFormatter',
+        'Traccar.view.TouchFix62'
     ],
 
     models: [
@@ -51,6 +52,7 @@ Ext.define('Traccar.Application', {
         'Devices',
         'AllGroups',
         'AllDevices',
+        'AlarmTypes',
         'Positions',
         'LatestPositions',
         'EventPositions',
