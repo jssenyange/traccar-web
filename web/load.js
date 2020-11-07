@@ -1,5 +1,5 @@
 (function () {
-    var debugMode, touchMode, locale, localeParameter, extjsVersion, proj4jsVersion, fontAwesomeVersion, olVersion, i, language, languages, languageDefault;
+    var debugMode, touchMode, locale, localeParameter, extjsVersion, proj4jsVersion, olVersion, i, language, languages, languageDefault;
 
     function addStyleFile(file) {
         var link = document.createElement('link');
@@ -36,6 +36,7 @@
     window.Locale = locale;
 
     locale.languages = {
+        'af': { name: 'Afrikaans', code: 'af' },
         'ar': { name: 'العربية', code: 'en' },
         'az': { name: 'Azərbaycanca', code: 'en' },
         'bg': { name: 'Български', code: 'bg' },
@@ -97,13 +98,20 @@
         languages = window.navigator.languages !== undefined ? window.navigator.languages.slice() : [];
         language = window.navigator.userLanguage || window.navigator.language;
         languages.push(language);
-        languages.push(language.substr(0, 2));
+        languages.push(language.substring(0, 2));
         languages.push(languageDefault);
         for (i = 0; i < languages.length; i++) {
             language = languages[i].replace('-', '_');
             if (language in locale.languages) {
                 locale.language = language;
                 break;
+            }
+            if (language.length > 2) {
+                language = languages[i].substring(0, 2);
+                if (language in locale.languages) {
+                    locale.language = language;
+                    break;
+                }
             }
         }
     }
@@ -148,13 +156,12 @@
     }
 
     extjsVersion = '6.2.0';
-    fontAwesomeVersion = '5.2.0';
-    olVersion = '4.6.5';
-    proj4jsVersion = '2.4.4';
+    olVersion = '6.1.1';
+    proj4jsVersion = '2.6.0';
 
     if (debugMode) {
-        addScriptFile('//cdnjs.cloudflare.com/ajax/libs/extjs/' + extjsVersion + '/ext-all.js');
-        addScriptFile('//cdnjs.cloudflare.com/ajax/libs/extjs/' + extjsVersion + '/packages/charts/classic/charts.js');
+        addScriptFile('//cdnjs.cloudflare.com/ajax/libs/extjs/' + extjsVersion + '/ext-all-debug.js');
+        addScriptFile('//cdnjs.cloudflare.com/ajax/libs/extjs/' + extjsVersion + '/packages/charts/classic/charts-debug.js');
     } else {
         addScriptFile('//cdnjs.cloudflare.com/ajax/libs/extjs/' + extjsVersion + '/ext-all.js');
         addScriptFile('//cdnjs.cloudflare.com/ajax/libs/extjs/' + extjsVersion + '/packages/charts/classic/charts.js');
@@ -180,7 +187,7 @@
     }
 
     window.Images = ['arrow', 'default', 'animal', 'bicycle', 'boat', 'bus', 'car', 'crane', 'helicopter', 'motorcycle',
-        'offroad', 'person', 'pickup', 'plane', 'ship', 'tractor', 'train', 'tram', 'trolleybus', 'truck', 'van'];
+        'offroad', 'person', 'pickup', 'plane', 'ship', 'tractor', 'train', 'tram', 'trolleybus', 'truck', 'van', 'scooter'];
 
     for (i = 0; i < window.Images.length; i++) {
         addSvgFile('images/' + window.Images[i] + '.svg', window.Images[i] + 'Svg');
