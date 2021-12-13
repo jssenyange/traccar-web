@@ -1,55 +1,78 @@
 export class SwitcherControl {
 
-  constructor(styles, defaultStyle, beforeSwitch, afterSwitch) {
-    this.styles = styles;
-    this.defaultStyle = defaultStyle;
-    this.beforeSwitch = beforeSwitch;
-    this.afterSwitch = afterSwitch;
+  constructor(onBeforeSwitch, onAfterSwitch) {
+    this.onBeforeSwitch = onBeforeSwitch;
+    this.onAfterSwitch = onAfterSwitch;
     this.onDocumentClick = this.onDocumentClick.bind(this);
+    this.styles = [];
+    this.currentStyle = null;
   }
 
   getDefaultPosition() {
     return 'top-right';
   }
 
-  onAdd(map) {
-    this.map = map;
-    this.controlContainer = document.createElement('div');
-    this.controlContainer.classList.add('mapboxgl-ctrl');
-    this.controlContainer.classList.add('mapboxgl-ctrl-group');
-    this.mapStyleContainer = document.createElement('div');
-    this.styleButton = document.createElement('button');
-    this.styleButton.type = 'button';
-    this.mapStyleContainer.classList.add('mapboxgl-style-list');
+  updateStyles(updatedStyles, selectedStyle) {
+    this.styles = updatedStyles;
+
+    while (this.mapStyleContainer.firstChild) {
+      this.mapStyleContainer.removeChild(this.mapStyleContainer.firstChild);
+    }
+
+    let selectedStyleElement;
+
     for (const style of this.styles) {
       const styleElement = document.createElement('button');
       styleElement.type = 'button';
       styleElement.innerText = style.title;
-      styleElement.classList.add(style.title.replace(/[^a-z0-9-]/gi, '_'));
+      styleElement.dataset.id = style.id;
       styleElement.dataset.uri = JSON.stringify(style.uri);
-      styleElement.addEventListener('click', event => {
-        const srcElement = event.srcElement;
-        if (srcElement.classList.contains('active')) {
-          return;
+      styleElement.addEventListener('click', (event) => {
+        const { target } = event;
+        if (!target.classList.contains('active')) {
+          this.onSelectStyle(target);
         }
-        this.beforeSwitch();
-        this.map.setStyle(JSON.parse(srcElement.dataset.uri));
-        this.afterSwitch();
-        this.mapStyleContainer.style.display = 'none';
-        this.styleButton.style.display = 'block';
-        const elms = this.mapStyleContainer.getElementsByClassName('active');
-        while (elms[0]) {
-          elms[0].classList.remove('active');
-        }
-        srcElement.classList.add('active');
       });
-      if (style.title === this.defaultStyle) {
+      if (style.id === selectedStyle) {
+        selectedStyleElement = styleElement;
         styleElement.classList.add('active');
       }
       this.mapStyleContainer.appendChild(styleElement);
     }
-    this.styleButton.classList.add('mapboxgl-ctrl-icon');
-    this.styleButton.classList.add('mapboxgl-style-switcher');
+
+    if (this.currentStyle !== selectedStyle) {
+      this.onSelectStyle(selectedStyleElement);
+    }
+  }
+
+  onSelectStyle(target) {
+    this.onBeforeSwitch();
+
+    this.map.setStyle(JSON.parse(target.dataset.uri));
+
+    this.mapStyleContainer.style.display = 'none';
+    this.styleButton.style.display = 'block';
+
+    const elements = this.mapStyleContainer.getElementsByClassName('active');
+    while (elements[0]) {
+      elements[0].classList.remove('active');
+    }
+    target.classList.add('active');
+
+    this.onAfterSwitch();
+  }
+
+  onAdd(map) {
+    this.map = map;
+    this.controlContainer = document.createElement('div');
+    this.controlContainer.classList.add('maplibregl-ctrl');
+    this.controlContainer.classList.add('maplibregl-ctrl-group');
+    this.mapStyleContainer = document.createElement('div');
+    this.styleButton = document.createElement('button');
+    this.styleButton.type = 'button';
+    this.mapStyleContainer.classList.add('maplibregl-style-list');
+    this.styleButton.classList.add('maplibregl-ctrl-icon');
+    this.styleButton.classList.add('maplibregl-style-switcher');
     this.styleButton.addEventListener('click', () => {
       this.styleButton.style.display = 'none';
       this.mapStyleContainer.style.display = 'block';

@@ -65,6 +65,7 @@
         'lt': { name: 'Lietuvių', code: 'lt' },
         'lv': { name: 'Latviešu', code: 'lv' },
         'ml': { name: 'മലയാളം', code: 'en' },
+        'mn': { name: 'Монгол хэл', code: 'en' },
         'ms': { name: 'بهاس ملايو', code: 'en' },
         'nb': { name: 'Norsk bokmål', code: 'no_NB' },
         'ne': { name: 'नेपाली', code: 'en' },
@@ -155,39 +156,22 @@
         navigator.__defineGetter__('userAgent', function () { return __originalUserAgent.replace(/\/OPR[^)]*/g, ''); });
     }
 
-    extjsVersion = '6.2.0';
-    olVersion = '6.1.1';
-    proj4jsVersion = '2.6.0';
+    addScriptFile('lib/extjs/ext-all.js');
+    addScriptFile('lib/extjs/classic/locale/locale-' + locale.languages[locale.language].code + '.js');
 
-    if (debugMode) {
-        addScriptFile('//cdnjs.cloudflare.com/ajax/libs/extjs/' + extjsVersion + '/ext-all-debug.js');
-        addScriptFile('//cdnjs.cloudflare.com/ajax/libs/extjs/' + extjsVersion + '/packages/charts/classic/charts-debug.js');
-    } else {
-        addScriptFile('//cdnjs.cloudflare.com/ajax/libs/extjs/' + extjsVersion + '/ext-all.js');
-        addScriptFile('//cdnjs.cloudflare.com/ajax/libs/extjs/' + extjsVersion + '/packages/charts/classic/charts.js');
-    }
-    addScriptFile('//cdnjs.cloudflare.com/ajax/libs/extjs/' + extjsVersion + '/classic/locale/locale-' + locale.languages[locale.language].code + '.js');
+    addStyleFile('lib/extjs/classic/theme-triton/resources/theme-triton-all.css');
+    addScriptFile('lib/extjs/classic/theme-triton/theme-triton.js');
 
-    addStyleFile('//cdnjs.cloudflare.com/ajax/libs/extjs/' + extjsVersion + '/classic/theme-triton/resources/theme-triton-all.css');
-    addScriptFile('//cdnjs.cloudflare.com/ajax/libs/extjs/' + extjsVersion + '/classic/theme-triton/theme-triton.js');
+    addScriptFile('lib/extjs/packages/charts/classic/charts.js');
+    addStyleFile('lib/extjs/packages/charts/classic/triton/resources/charts-all.css');
 
-    addStyleFile('//cdnjs.cloudflare.com/ajax/libs/extjs/' + extjsVersion + '/packages/charts/classic/triton/resources/charts-all.css');
+    addStyleFile('lib/ol/ol.css');
+    addScriptFile('lib/ol/ol.js');
 
-    addStyleFile('libs/ol3/' + olVersion + '/ol.css');
-    addScriptFile('libs/ol3/' + olVersion + '/ol.js');
-    /*addStyleFile('//cdnjs.cloudflare.com/ajax/libs/ol3/' + olVersion + '/ol.css');
-    if (debugMode) {
-        addScriptFile('//cdnjs.cloudflare.com/ajax/libs/ol3/' + olVersion + '/ol-debug.js');
-    } else {
-        addScriptFile('//cdnjs.cloudflare.com/ajax/libs/ol3/' + olVersion + '/ol.js');
-    }*/
+    addStyleFile('lib/ol-layerswitcher/ol-layerswitcher.css');
+    addScriptFile('lib/ol-layerswitcher/ol-layerswitcher.js');
 
-
-    if (debugMode) {
-        addScriptFile('//cdnjs.cloudflare.com/ajax/libs/proj4js/' + proj4jsVersion + '/proj4-src.js');
-    } else {
-        addScriptFile('//cdnjs.cloudflare.com/ajax/libs/proj4js/' + proj4jsVersion + '/proj4.js');
-    }
+    addScriptFile('lib/proj4/proj4.js');
 
     window.Images = ['arrow', 'default', 'animal', 'bicycle', 'boat', 'bus', 'car', 'crane', 'helicopter', 'motorcycle',
         'offroad', 'person', 'pickup', 'plane', 'ship', 'tractor', 'train', 'tram', 'trolleybus', 'truck', 'van', 'scooter'];

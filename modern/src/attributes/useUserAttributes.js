@@ -1,7 +1,7 @@
-import t from '../common/localization'
+import { useMemo } from 'react';
 
-export default {
-  'notificationTokens': {
+export default (t) => useMemo(() => ({
+  notificationTokens: {
     name: t('attributeNotificationTokens'),
     type: 'string',
   },
@@ -49,20 +49,20 @@ export default {
     name: t('attributeUiHidePositionAttributes'),
     type: 'string',
   },
-  'distanceUnit': {
+  distanceUnit: {
     name: t('settingsDistanceUnit'),
     type: 'string',
   },
-  'speedUnit': {
+  speedUnit: {
     name: t('settingsSpeedUnit'),
     type: 'string',
   },
-  'volumeUnit': {
+  volumeUnit: {
     name: t('settingsVolumeUnit'),
     type: 'string',
   },
-  'timezone': {
+  timezone: {
     name: t('sharedTimezone'),
     type: 'string',
   },
-};
+}), [t]);

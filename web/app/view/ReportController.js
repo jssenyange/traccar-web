@@ -514,9 +514,9 @@ Ext.define('Traccar.view.ReportController', {
 
     eventsColumns: [{
         text: Strings.positionFixTime,
-        dataIndex: 'serverTime',
+        dataIndex: 'eventTime',
         xtype: 'datecolumn',
-        renderer: Traccar.AttributeFormatter.getFormatter('serverTime')
+        renderer: Traccar.AttributeFormatter.getFormatter('eventTime')
     }, {
         text: Strings.reportDeviceName,
         dataIndex: 'deviceId',
@@ -526,6 +526,12 @@ Ext.define('Traccar.view.ReportController', {
         dataIndex: 'type',
         renderer: function (value) {
             return Traccar.app.getEventString(value);
+        }
+    }, {
+        text: Strings.positionAlarm,
+        dataIndex: 'attributes',
+        renderer: function (value) {
+            return value['alarm'];
         }
     }, {
         text: Strings.sharedGeofence,

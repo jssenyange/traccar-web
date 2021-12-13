@@ -1,4 +1,4 @@
-name: Node.js CI
+name: New App Lint
 
 on:
   push:
@@ -15,4 +15,6 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
     - run: npm install
+      working-directory: modern
     - run: npm run lint
+      working-directory: modern

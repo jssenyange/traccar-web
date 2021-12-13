@@ -1,7 +1,7 @@
-import t from '../common/localization'
+import { useMemo } from 'react';
 
-export default {
-  'speedLimit': {
+export default (t) => useMemo(() => ({
+  speedLimit: {
     name: t('attributeSpeedLimit'),
     type: 'string',
   },
@@ -9,4 +9,4 @@ export default {
     name: t('attributeReportIgnoreOdometer'),
     type: 'boolean',
   },
-};
+}), [t]);

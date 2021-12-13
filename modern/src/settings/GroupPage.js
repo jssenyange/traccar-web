@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import TextField from '@material-ui/core/TextField';
 
-import t from '../common/localization';
-import EditItemView from '../EditItemView';
-import { Accordion, AccordionSummary, AccordionDetails, makeStyles, Typography } from '@material-ui/core';
+import {
+  Accordion, AccordionSummary, AccordionDetails, makeStyles, Typography,
+} from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import EditItemView from '../EditItemView';
 import EditAttributesView from '../attributes/EditAttributesView';
-import deviceAttributes from '../attributes/deviceAttributes';
+import useDeviceAttributes from '../attributes/useDeviceAttributes';
 import SelectField from '../form/SelectField';
+import { useTranslation } from '../LocalizationProvider';
 
 const useStyles = makeStyles(() => ({
   details: {
@@ -17,12 +19,16 @@ const useStyles = makeStyles(() => ({
 
 const GroupPage = () => {
   const classes = useStyles();
+  const t = useTranslation();
+
+  const deviceAttributes = useDeviceAttributes(t);
 
   const [item, setItem] = useState();
 
   return (
     <EditItemView endpoint="groups" item={item} setItem={setItem}>
-      {item &&
+      {item
+        && (
         <>
           <Accordion defaultExpanded>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -33,10 +39,11 @@ const GroupPage = () => {
             <AccordionDetails className={classes.details}>
               <TextField
                 margin="normal"
-                defaultValue={item.name}
-                onChange={event => setItem({...item, name: event.target.value})}
+                value={item.name || ''}
+                onChange={(event) => setItem({ ...item, name: event.target.value })}
                 label={t('sharedName')}
-                variant="filled" />
+                variant="filled"
+              />
             </AccordionDetails>
           </Accordion>
           <Accordion>
@@ -48,11 +55,12 @@ const GroupPage = () => {
             <AccordionDetails className={classes.details}>
               <SelectField
                 margin="normal"
-                defaultValue={item.groupId}
-                onChange={event => setItem({...item, groupId: Number(event.target.value)})}
+                value={item.groupId || 0}
+                onChange={(event) => setItem({ ...item, groupId: Number(event.target.value) })}
                 endpoint="/api/groups"
                 label={t('groupParent')}
-                variant="filled" />
+                variant="filled"
+              />
             </AccordionDetails>
           </Accordion>
           <Accordion>
@@ -64,15 +72,15 @@ const GroupPage = () => {
             <AccordionDetails className={classes.details}>
               <EditAttributesView
                 attributes={item.attributes}
-                setAttributes={attributes => setItem({...item, attributes})}
+                setAttributes={(attributes) => setItem({ ...item, attributes })}
                 definitions={deviceAttributes}
-                />
+              />
             </AccordionDetails>
           </Accordion>
         </>
-      }
+        )}
     </EditItemView>
   );
-}
+};
 
 export default GroupPage;

@@ -20,11 +20,23 @@ Ext.define('Traccar.store.MapTypes', {
     fields: ['key', 'name'],
 
     data: [{
-        key: 'carto',
-        name: Strings.mapCarto
+        key: 'locationIqStreets',
+        name: Strings.mapLocationIqStreets
+    }, {
+        key: 'locationIqEarth',
+        name: Strings.mapLocationIqEarth
+    }, {
+        key: 'locationIqHybrid',
+        name: Strings.mapLocationIqHybrid
     }, {
         key: 'osm',
         name: Strings.mapOsm
+    }, {
+        key: 'carto',
+        name: Strings.mapCarto
+    }, {
+        key: 'autoNavi',
+        name: Strings.mapAutoNavi
     }, {
         key: 'bingRoad',
         name: Strings.mapBingRoad
@@ -35,17 +47,11 @@ Ext.define('Traccar.store.MapTypes', {
         key: 'bingHybrid',
         name: Strings.mapBingHybrid
     }, {
-        key: 'baidu',
-        name: Strings.mapBaidu
-    }, {
         key: 'yandexMap',
         name: Strings.mapYandexMap
     }, {
         key: 'yandexSat',
         name: Strings.mapYandexSat
-    }, {
-        key: 'wikimedia',
-        name: Strings.mapWikimedia
     }, {
         key: 'custom',
         name: Strings.mapCustom

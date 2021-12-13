@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 - 2017 Anton Tananaev (anton@traccar.org)
+ * Copyright 2015 - 2021 Anton Tananaev (anton@traccar.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ Ext.define('Traccar.view.dialog.LoginController', {
         if (!Traccar.app.getServer().get('registration')) {
             this.lookupReference('registerButton').hide();
         }
+        this.lookupReference('resetButton').setHidden(!Traccar.app.getServer().get('emailEnabled'));        
         this.lookupReference('languageField').setValue(Locale.language);
     },
 
@@ -109,5 +110,27 @@ Ext.define('Traccar.view.dialog.LoginController', {
 
     onRegisterClick: function () {
         Ext.create('Traccar.view.dialog.Register').show();
+    },
+
+    onResetClick: function () {
+        Ext.Msg.prompt(Strings.loginReset, Strings.userEmail, function (btn, text) {
+            if (btn === 'ok') {
+                Ext.Ajax.request({
+                    scope: this,
+                    method: 'POST',
+                    url: 'api/password/reset',
+                    params: {
+                        email: text
+                    },
+                    callback: function (options, success, response) {
+                        if (success) {
+                            Traccar.app.showToast(Strings.loginResetSuccess);
+                        } else {
+                            Traccar.app.showError(response.responseText);
+                        }
+                    }
+                });
+            }
+        });
     }
 });

@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { Accordion, AccordionDetails, AccordionSummary, Button, Container, FormControl, makeStyles, Paper, Slider, Tooltip, Typography } from '@material-ui/core';
+import {
+  Accordion, AccordionDetails, AccordionSummary, Container, makeStyles, Paper, Slider, Tooltip, Typography,
+} from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import MainToolbar from '../MainToolbar';
 import Map from '../map/Map';
-import t from '../common/localization';
-import FilterForm from './FilterForm';
 import ReplayPathMap from '../map/ReplayPathMap';
 import PositionsMap from '../map/PositionsMap';
 import { formatPosition } from '../common/formatter';
+import ReportFilter from './ReportFilter';
+import { useTranslation } from '../LocalizationProvider';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     height: '100%',
     display: 'flex',
@@ -31,34 +33,23 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const TimeLabel = ({ children, open, value }) => {
-  return (
-    <Tooltip open={open} enterTouchDelay={0} placement="top" title={value}>
-      {children}
-    </Tooltip>
-  );
-};
+const TimeLabel = ({ children, open, value }) => (
+  <Tooltip open={open} enterTouchDelay={0} placement="top" title={value}>
+    {children}
+  </Tooltip>
+);
 
 const ReplayPage = () => {
   const classes = useStyles();
+  const t = useTranslation();
 
   const [expanded, setExpanded] = useState(true);
-
-  const [deviceId, setDeviceId] = useState();
-  const [from, setFrom] = useState();
-  const [to, setTo] = useState();
-
   const [positions, setPositions] = useState([]);
-
   const [index, setIndex] = useState(0);
 
-  const handleShow = async () => {
-    const query = new URLSearchParams({
-      deviceId,
-      from: from.toISOString(),
-      to: to.toISOString(),
-    });
-    const response = await fetch(`/api/positions?${query.toString()}`, { headers: { 'Accept': 'application/json' } });
+  const handleSubmit = async (deviceId, from, to, _, headers) => {
+    const query = new URLSearchParams({ deviceId, from, to });
+    const response = await fetch(`/api/positions?${query.toString()}`, { headers });
     if (response.ok) {
       setIndex(0);
       setPositions(await response.json());
@@ -71,12 +62,12 @@ const ReplayPage = () => {
       <MainToolbar />
       <Map>
         <ReplayPathMap positions={positions} />
-        {index < positions.length &&
-          <PositionsMap positions={[positions[index]]} />
-        }
+        {index < positions.length
+          && <PositionsMap positions={[positions[index]]} />}
       </Map>
       <Container maxWidth="sm" className={classes.controlPanel}>
-        {!!positions.length &&
+        {!!positions.length
+          && (
           <Paper className={classes.controlContent}>
             <Slider
               max={positions.length - 1}
@@ -85,37 +76,26 @@ const ReplayPage = () => {
               value={index}
               onChange={(_, index) => setIndex(index)}
               valueLabelDisplay="auto"
-              valueLabelFormat={i => i < positions.length ? formatPosition(positions[i], 'fixTime') : ''}
+              valueLabelFormat={(i) => (i < positions.length ? formatPosition(positions[i], 'fixTime', t) : '')}
               ValueLabelComponent={TimeLabel}
-              />
+            />
           </Paper>
-        }
+          )}
         <div>
           <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography align='center'>
+              <Typography align="center">
                 {t('reportConfigure')}
               </Typography>
             </AccordionSummary>
             <AccordionDetails className={classes.configForm}>
-              <FilterForm
-                deviceId={deviceId}
-                setDeviceId={setDeviceId}
-                from={from}
-                setFrom={setFrom}
-                to={to}
-                setTo={setTo} />
-              <FormControl margin='normal' fullWidth>
-                <Button type='button' color='primary' variant='contained' disabled={!deviceId} onClick={handleShow}>
-                  {t('reportShow')}
-                </Button>
-              </FormControl>
+              <ReportFilter handleSubmit={handleSubmit} showOnly />
             </AccordionDetails>
           </Accordion>
         </div>
       </Container>
     </div>
   );
-}
+};
 
 export default ReplayPage;

@@ -66,6 +66,7 @@ Ext.define('Traccar.view.map.MapMarkerController', {
             },
             component: {
                 '#': {
+                    mapready: 'initGeolocation',
                     selectfeature: 'selectFeature',
                     deselectfeature: 'deselectFeature'
                 }
@@ -80,6 +81,54 @@ Ext.define('Traccar.view.map.MapMarkerController', {
         this.liveRoutes = {};
         this.liveRouteLength = Traccar.app.getAttributePreference('web.liveRouteLength', 10);
         this.selectZoom = Traccar.app.getAttributePreference('web.selectZoom', 0);
+    },
+
+    initGeolocation: function () {
+        var geolocation, accuracyFeature, positionFeature;
+
+        geolocation = new ol.Geolocation({
+            trackingOptions: {
+                enableHighAccuracy: true
+            },
+            projection: this.getView().getMapView().getProjection()
+        });
+
+        geolocation.on('error', function (error) {
+            Traccar.app.showError(error.message);
+        });
+
+        accuracyFeature = new ol.Feature();
+        geolocation.on('change:accuracyGeometry', function () {
+            accuracyFeature.setGeometry(geolocation.getAccuracyGeometry());
+        });
+
+        positionFeature = new ol.Feature();
+        positionFeature.setStyle(new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 6,
+                fill: new ol.style.Fill({
+                    color: '#3399CC'
+                }),
+                stroke: new ol.style.Stroke({
+                    color: '#fff',
+                    width: 2
+                })
+            })
+        }));
+
+        geolocation.on('change:position', function () {
+            var coordinates = geolocation.getPosition();
+            positionFeature.setGeometry(coordinates ? new ol.geom.Point(coordinates) : null);
+        });
+
+        this.getView().getAccuracySource().addFeature(accuracyFeature);
+        this.getView().getMarkersSource().addFeature(positionFeature);
+
+        this.geolocation = geolocation;
+    },
+
+    showCurrentLocation: function (view) {
+        this.geolocation.setTracking(view.pressed);
     },
 
     getAreaStyle: function (label, color) {
@@ -189,7 +238,7 @@ Ext.define('Traccar.view.map.MapMarkerController', {
     },
 
     animateMarker: function (marker, geometry, course) {
-        var start, end, duration, timeout, line, updatePosition, self;
+        var start, end, duration, timeout, line, updatePosition, self, follow;
 
         start = marker.getGeometry().getCoordinates();
         end = geometry.getCoordinates();
@@ -197,12 +246,16 @@ Ext.define('Traccar.view.map.MapMarkerController', {
         duration = Traccar.Style.mapAnimateMarkerDuration;
         timeout = Traccar.Style.mapAnimateMarkerTimeout;
         self = this;
+        follow = this.lookupReference('deviceFollowButton').pressed;
 
         updatePosition = function (position, marker) {
             var coordinate, style;
             coordinate = marker.get('line').getCoordinateAt(position / (duration / timeout));
             style = marker.getStyle();
             marker.setGeometry(new ol.geom.Point(coordinate));
+            if (marker === self.selectedMarker && follow) {
+                self.getView().getMapView().setCenter(marker.getGeometry().getCoordinates());
+            }
             if (position < duration / timeout) {
                 setTimeout(updatePosition, timeout, position + 1, marker);
             } else {
@@ -295,10 +348,9 @@ Ext.define('Traccar.view.map.MapMarkerController', {
             if (this.isDeviceVisible(device)) {
                 this.getView().getMarkersSource().addFeature(marker);
             }
-        }
-
-        if (marker === this.selectedMarker && this.lookupReference('deviceFollowButton').pressed) {
-            this.getView().getMapView().setCenter(marker.getGeometry().getCoordinates());
+            if (marker === this.selectedMarker && this.lookupReference('deviceFollowButton').pressed) {
+                this.getView().getMapView().setCenter(marker.getGeometry().getCoordinates());
+            }
         }
     },
 
