@@ -145,6 +145,14 @@ Ext.define('Traccar.view.dialog.User', {
                 disabled: true,
                 reference: 'limitCommandsField'
             }, {
+                xtype: 'checkboxfield',
+                inputValue: true,
+                uncheckedValue: false,
+                name: 'disableReports',
+                fieldLabel: Strings.userDisableReports,
+                disabled: true,
+                reference: 'disableReportsField'
+            }, {
                 xtype: 'datefield',
                 name: 'expirationTime',
                 fieldLabel: Strings.userExpirationTime,
@@ -164,17 +172,6 @@ Ext.define('Traccar.view.dialog.User', {
                 fieldLabel: Strings.userUserLimit,
                 disabled: true,
                 reference: 'userLimitField'
-            }, {
-                xtype: 'unescapedTextField',
-                name: 'token',
-                reference: 'tokenField',
-                fieldLabel: Strings.userToken,
-                triggers: {
-                    generate: {
-                        cls: 'iconCls: x-fa fa-refresh',
-                        handler: 'generateToken'
-                    }
-                }
             }]
         }]
     },
