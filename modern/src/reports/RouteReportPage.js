@@ -1,103 +1,142 @@
-import React, { useState } from 'react';
-import { Paper } from '@material-ui/core';
-import { DataGrid } from '@material-ui/data-grid';
-import { useTheme } from '@material-ui/core/styles';
+import React, { Fragment, useCallback, useState } from 'react';
+import { useSelector } from 'react-redux';
 import {
-  formatDistance, formatSpeed, formatBoolean, formatDate, formatCoordinate,
-} from '../common/formatter';
-import ReportFilter from './ReportFilter';
-import ReportLayout from './ReportLayout';
-import { useAttributePreference, usePreference } from '../common/preferences';
-import { useTranslation } from '../LocalizationProvider';
-
-const Filter = ({ setItems }) => {
-  const handleSubmit = async (deviceId, from, to, mail, headers) => {
-    const query = new URLSearchParams({
-      deviceId, from, to, mail,
-    });
-    const response = await fetch(`/api/reports/route?${query.toString()}`, { headers });
-    if (response.ok) {
-      const contentType = response.headers.get('content-type');
-      if (contentType) {
-        if (contentType === 'application/json') {
-          setItems(await response.json());
-        } else {
-          window.location.assign(window.URL.createObjectURL(await response.blob()));
-        }
-      }
-    }
-  };
-
-  return <ReportFilter handleSubmit={handleSubmit} />;
-};
+  IconButton, Table, TableBody, TableCell, TableHead, TableRow,
+} from '@mui/material';
+import GpsFixedIcon from '@mui/icons-material/GpsFixed';
+import LocationSearchingIcon from '@mui/icons-material/LocationSearching';
+import ReportFilter from './components/ReportFilter';
+import { useTranslation } from '../common/components/LocalizationProvider';
+import PageLayout from '../common/components/PageLayout';
+import ReportsMenu from './components/ReportsMenu';
+import usePersistedState from '../common/util/usePersistedState';
+import PositionValue from '../common/components/PositionValue';
+import ColumnSelect from './components/ColumnSelect';
+import usePositionAttributes from '../common/attributes/usePositionAttributes';
+import { useCatch } from '../reactHelper';
+import MapView from '../map/core/MapView';
+import MapRoutePath from '../map/MapRoutePath';
+import MapRoutePoints from '../map/MapRoutePoints';
+import MapPositions from '../map/MapPositions';
+import useReportStyles from './common/useReportStyles';
+import TableShimmer from '../common/components/TableShimmer';
+import MapCamera from '../map/MapCamera';
+import MapGeofence from '../map/MapGeofence';
 
 const RouteReportPage = () => {
-  const theme = useTheme();
+  const classes = useReportStyles();
   const t = useTranslation();
 
-  const distanceUnit = useAttributePreference('distanceUnit');
-  const speedUnit = useAttributePreference('speedUnit');
-  const coordinateFormat = usePreference('coordinateFormat');
+  const positionAttributes = usePositionAttributes(t);
 
-  const columns = [{
-    headerName: t('positionFixTime'),
-    field: 'fixTime',
-    type: 'dateTime',
-    width: theme.dimensions.columnWidthDate,
-    valueFormatter: ({ value }) => formatDate(value),
-  }, {
-    headerName: t('positionLatitude'),
-    field: 'latitude',
-    type: 'number',
-    width: theme.dimensions.columnWidthNumber,
-    valueFormatter: ({ value }) => formatCoordinate('latitude', value, coordinateFormat),
-  }, {
-    headerName: t('positionLongitude'),
-    field: 'longitude',
-    type: 'number',
-    width: theme.dimensions.columnWidthNumber,
-    valueFormatter: ({ value }) => formatCoordinate('longitude', value, coordinateFormat),
-  }, {
-    headerName: t('positionSpeed'),
-    field: 'speed',
-    type: 'number',
-    width: theme.dimensions.columnWidthString,
-    valueFormatter: ({ value }) => formatSpeed(value, speedUnit, t),
-  }, {
-    headerName: t('positionAddress'),
-    field: 'address',
-    type: 'string',
-    width: theme.dimensions.columnWidthString,
-  }, {
-    headerName: t('positionIgnition'),
-    field: 'ignition',
-    type: 'boolean',
-    width: theme.dimensions.columnWidthBoolean,
-    valueGetter: ({ row }) => row.attributes.ignition,
-    valueFormatter: ({ value }) => formatBoolean(value, t),
-  }, {
-    headerName: t('deviceTotalDistance'),
-    field: 'totalDistance',
-    type: 'number',
-    hide: true,
-    width: theme.dimensions.columnWidthNumber,
-    valueGetter: ({ row }) => row.attributes.totalDistance,
-    valueFormatter: ({ value }) => formatDistance(value, distanceUnit, t),
-  }];
+  const devices = useSelector((state) => state.devices.items);
 
+  const [columns, setColumns] = usePersistedState('routeColumns', ['fixTime', 'latitude', 'longitude', 'speed', 'address']);
   const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const onMapPointClick = useCallback((positionId) => {
+    setSelectedItem(items.find((it) => it.id === positionId));
+  }, [items, setSelectedItem]);
+
+  const handleSubmit = useCatch(async ({ deviceIds, from, to, type }) => {
+    const query = new URLSearchParams({ from, to });
+    deviceIds.forEach((deviceId) => query.append('deviceId', deviceId));
+    if (type === 'export') {
+      window.location.assign(`/api/reports/route/xlsx?${query.toString()}`);
+    } else if (type === 'mail') {
+      const response = await fetch(`/api/reports/route/mail?${query.toString()}`);
+      if (!response.ok) {
+        throw Error(await response.text());
+      }
+    } else {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/reports/route?${query.toString()}`, {
+          headers: { Accept: 'application/json' },
+        });
+        if (response.ok) {
+          setItems(await response.json());
+        } else {
+          throw Error(await response.text());
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+  });
 
   return (
-    <ReportLayout filter={<Filter setItems={setItems} />}>
-      <Paper>
-        <DataGrid
-          rows={items}
-          columns={columns}
-          hideFooter
-          autoHeight
-        />
-      </Paper>
-    </ReportLayout>
+    <PageLayout menu={<ReportsMenu />} breadcrumbs={['reportTitle', 'reportRoute']}>
+      <div className={classes.container}>
+        {selectedItem && (
+          <div className={classes.containerMap}>
+            <MapView>
+              <MapGeofence />
+              {[...new Set(items.map((it) => it.deviceId))].map((deviceId) => {
+                const positions = items.filter((position) => position.deviceId === deviceId);
+                return (
+                  <Fragment key={deviceId}>
+                    <MapRoutePath positions={positions} />
+                    <MapRoutePoints positions={positions} onClick={onMapPointClick} />
+                  </Fragment>
+                );
+              })}
+              <MapPositions positions={[selectedItem]} titleField="fixTime" />
+            </MapView>
+            <MapCamera positions={items} />
+          </div>
+        )}
+        <div className={classes.containerMain}>
+          <div className={classes.header}>
+            <ReportFilter handleSubmit={handleSubmit} multiDevice>
+              <ColumnSelect
+                columns={columns}
+                setColumns={setColumns}
+                columnsObject={positionAttributes}
+              />
+            </ReportFilter>
+          </div>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell className={classes.columnAction} />
+                <TableCell>{t('sharedDevice')}</TableCell>
+                {columns.map((key) => (<TableCell key={key}>{positionAttributes[key].name}</TableCell>))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {!loading ? items.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className={classes.columnAction} padding="none">
+                    {selectedItem === item ? (
+                      <IconButton size="small" onClick={() => setSelectedItem(null)}>
+                        <GpsFixedIcon fontSize="small" />
+                      </IconButton>
+                    ) : (
+                      <IconButton size="small" onClick={() => setSelectedItem(item)}>
+                        <LocationSearchingIcon fontSize="small" />
+                      </IconButton>
+                    )}
+                  </TableCell>
+                  <TableCell>{devices[item.deviceId].name}</TableCell>
+                  {columns.map((key) => (
+                    <TableCell key={key}>
+                      <PositionValue
+                        position={item}
+                        property={item.hasOwnProperty(key) ? key : null}
+                        attribute={item.hasOwnProperty(key) ? null : key}
+                      />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              )) : (<TableShimmer columns={columns.length + 2} startAction />)}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    </PageLayout>
   );
 };
 

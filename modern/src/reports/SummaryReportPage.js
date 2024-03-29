@@ -1,120 +1,137 @@
 import React, { useState } from 'react';
-import { DataGrid } from '@material-ui/data-grid';
-import { Grid, FormControlLabel, Checkbox } from '@material-ui/core';
-import { useTheme } from '@material-ui/core/styles';
+import { useSelector } from 'react-redux';
 import {
-  formatDistance, formatHours, formatDate, formatSpeed, formatVolume,
-} from '../common/formatter';
-import ReportFilter from './ReportFilter';
-import ReportLayout from './ReportLayout';
-import { useAttributePreference } from '../common/preferences';
-import { useTranslation } from '../LocalizationProvider';
+  FormControl, InputLabel, Select, MenuItem, Table, TableHead, TableRow, TableBody, TableCell,
+} from '@mui/material';
+import {
+  formatDistance, formatHours, formatSpeed, formatVolume, formatTime,
+} from '../common/util/formatter';
+import ReportFilter from './components/ReportFilter';
+import { useAttributePreference, usePreference } from '../common/util/preferences';
+import { useTranslation } from '../common/components/LocalizationProvider';
+import PageLayout from '../common/components/PageLayout';
+import ReportsMenu from './components/ReportsMenu';
+import usePersistedState from '../common/util/usePersistedState';
+import ColumnSelect from './components/ColumnSelect';
+import { useCatch } from '../reactHelper';
+import useReportStyles from './common/useReportStyles';
+import TableShimmer from '../common/components/TableShimmer';
 
-const Filter = ({ setItems }) => {
-  const t = useTranslation();
-
-  const [daily, setDaily] = useState(false);
-
-  const handleSubmit = async (deviceId, from, to, mail, headers) => {
-    const query = new URLSearchParams({
-      deviceId, from, to, daily, mail,
-    });
-    const response = await fetch(`/api/reports/summary?${query.toString()}`, { headers });
-    if (response.ok) {
-      const contentType = response.headers.get('content-type');
-      if (contentType) {
-        if (contentType === 'application/json') {
-          setItems(await response.json());
-        } else {
-          window.location.assign(window.URL.createObjectURL(await response.blob()));
-        }
-      }
-    }
-  };
-
-  return (
-    <ReportFilter handleSubmit={handleSubmit}>
-      <Grid item xs={12} sm={6}>
-        <FormControlLabel
-          control={<Checkbox checked={daily} onChange={(e) => setDaily(e.target.checked)} />}
-          label={t('reportDaily')}
-        />
-      </Grid>
-    </ReportFilter>
-  );
-};
+const columnsArray = [
+  ['startTime', 'reportStartDate'],
+  ['distance', 'sharedDistance'],
+  ['startOdometer', 'reportStartOdometer'],
+  ['endOdometer', 'reportEndOdometer'],
+  ['averageSpeed', 'reportAverageSpeed'],
+  ['maxSpeed', 'reportMaximumSpeed'],
+  ['engineHours', 'reportEngineHours'],
+  ['spentFuel', 'reportSpentFuel'],
+];
+const columnsMap = new Map(columnsArray);
 
 const SummaryReportPage = () => {
-  const theme = useTheme();
+  const classes = useReportStyles();
   const t = useTranslation();
+
+  const devices = useSelector((state) => state.devices.items);
 
   const distanceUnit = useAttributePreference('distanceUnit');
   const speedUnit = useAttributePreference('speedUnit');
   const volumeUnit = useAttributePreference('volumeUnit');
+  const hours12 = usePreference('twelveHourFormat');
 
+  const [columns, setColumns] = usePersistedState('summaryColumns', ['startTime', 'distance', 'averageSpeed']);
+  const [daily, setDaily] = useState(false);
   const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const columns = [{
-    headerName: t('reportStartDate'),
-    field: 'startTime',
-    type: 'dateTime',
-    width: theme.dimensions.columnWidthDate,
-    valueFormatter: ({ value }) => formatDate(value, 'YYYY-MM-DD'),
-  }, {
-    headerName: t('sharedDistance'),
-    field: 'distance',
-    type: 'number',
-    width: theme.dimensions.columnWidthNumber,
-    valueFormatter: ({ value }) => formatDistance(value, distanceUnit, t),
-  }, {
-    headerName: t('reportStartOdometer'),
-    field: 'startOdometer',
-    type: 'number',
-    width: theme.dimensions.columnWidthNumber,
-    valueFormatter: ({ value }) => formatDistance(value, distanceUnit, t),
-  }, {
-    headerName: t('reportEndOdometer'),
-    field: 'endOdometer',
-    type: 'number',
-    width: theme.dimensions.columnWidthNumber,
-    valueFormatter: ({ value }) => formatDistance(value, distanceUnit, t),
-  }, {
-    headerName: t('reportAverageSpeed'),
-    field: 'averageSpeed',
-    type: 'number',
-    width: theme.dimensions.columnWidthNumber,
-    valueFormatter: ({ value }) => formatSpeed(value, speedUnit, t),
-  }, {
-    headerName: t('reportMaximumSpeed'),
-    field: 'maxSpeed',
-    type: 'number',
-    width: theme.dimensions.columnWidthNumber,
-    valueFormatter: ({ value }) => formatSpeed(value, speedUnit, t),
-  }, {
-    headerName: t('reportEngineHours'),
-    field: 'engineHours',
-    type: 'string',
-    width: theme.dimensions.columnWidthNumber,
-    valueFormatter: ({ value }) => formatHours(value),
-  }, {
-    headerName: t('reportSpentFuel'),
-    field: 'spentFuel',
-    type: 'number',
-    width: theme.dimensions.columnWidthNumber,
-    hide: true,
-    valueFormatter: ({ value }) => formatVolume(value, volumeUnit, t),
-  }];
+  const handleSubmit = useCatch(async ({ deviceIds, groupIds, from, to, type }) => {
+    const query = new URLSearchParams({ from, to, daily });
+    deviceIds.forEach((deviceId) => query.append('deviceId', deviceId));
+    groupIds.forEach((groupId) => query.append('groupId', groupId));
+    if (type === 'export') {
+      window.location.assign(`/api/reports/summary/xlsx?${query.toString()}`);
+    } else if (type === 'mail') {
+      const response = await fetch(`/api/reports/summary/mail?${query.toString()}`);
+      if (!response.ok) {
+        throw Error(await response.text());
+      }
+    } else {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/reports/summary?${query.toString()}`, {
+          headers: { Accept: 'application/json' },
+        });
+        if (response.ok) {
+          setItems(await response.json());
+        } else {
+          throw Error(await response.text());
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+  });
+
+  const formatValue = (item, key) => {
+    switch (key) {
+      case 'deviceId':
+        return devices[item[key]].name;
+      case 'startTime':
+        return formatTime(item[key], 'date', hours12);
+      case 'startOdometer':
+      case 'endOdometer':
+      case 'distance':
+        return formatDistance(item[key], distanceUnit, t);
+      case 'averageSpeed':
+      case 'maxSpeed':
+        return formatSpeed(item[key], speedUnit, t);
+      case 'engineHours':
+        return formatHours(item[key]);
+      case 'spentFuel':
+        return formatVolume(item[key], volumeUnit, t);
+      default:
+        return item[key];
+    }
+  };
 
   return (
-    <ReportLayout filter={<Filter setItems={setItems} />}>
-      <DataGrid
-        rows={items}
-        columns={columns}
-        hideFooter
-        autoHeight
-        getRowId={() => Math.random()}
-      />
-    </ReportLayout>
+    <PageLayout menu={<ReportsMenu />} breadcrumbs={['reportTitle', 'reportSummary']}>
+      <div className={classes.header}>
+        <ReportFilter handleSubmit={handleSubmit} multiDevice includeGroups>
+          <div className={classes.filterItem}>
+            <FormControl fullWidth>
+              <InputLabel>{t('sharedType')}</InputLabel>
+              <Select label={t('sharedType')} value={daily} onChange={(e) => setDaily(e.target.value)}>
+                <MenuItem value={false}>{t('reportSummary')}</MenuItem>
+                <MenuItem value>{t('reportDaily')}</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+          <ColumnSelect columns={columns} setColumns={setColumns} columnsArray={columnsArray} />
+        </ReportFilter>
+      </div>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>{t('sharedDevice')}</TableCell>
+            {columns.map((key) => (<TableCell key={key}>{t(columnsMap.get(key))}</TableCell>))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {!loading ? items.map((item) => (
+            <TableRow key={(`${item.deviceId}_${Date.parse(item.startTime)}`)}>
+              <TableCell>{devices[item.deviceId].name}</TableCell>
+              {columns.map((key) => (
+                <TableCell key={key}>
+                  {formatValue(item, key)}
+                </TableCell>
+              ))}
+            </TableRow>
+          )) : (<TableShimmer columns={columns.length + 1} />)}
+        </TableBody>
+      </Table>
+    </PageLayout>
   );
 };
 

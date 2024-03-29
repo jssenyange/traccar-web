@@ -81,10 +81,10 @@ Ext.define('Traccar.model.User', {
         name: 'limitCommands',
         type: 'boolean'
     }, {
-        name: 'poiLayer',
-        type: 'string'
+        name: 'disableReports',
+        type: 'boolean'
     }, {
-        name: 'token',
+        name: 'poiLayer',
         type: 'string'
     }, {
         name: 'attributes'

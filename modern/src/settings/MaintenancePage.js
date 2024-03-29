@@ -1,22 +1,34 @@
 import React, { useState } from 'react';
 import {
-  Accordion, AccordionSummary, AccordionDetails, makeStyles, Typography, TextField, FormControl, InputLabel, MenuItem, Select,
-} from '@material-ui/core';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { prefixString } from '../common/stringUtils';
-import EditItemView from '../EditItemView';
-import EditAttributesView from '../attributes/EditAttributesView';
-import { useAttributePreference } from '../common/preferences';
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Typography,
+  TextField,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+} from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { prefixString } from '../common/util/stringUtils';
+import EditItemView from './components/EditItemView';
+import EditAttributesAccordion from './components/EditAttributesAccordion';
+import { useAttributePreference } from '../common/util/preferences';
 import {
   speedFromKnots, speedToKnots, distanceFromMeters, distanceToMeters,
-} from '../common/converter';
-import { useTranslation } from '../LocalizationProvider';
-import usePositionAttributes from '../attributes/usePositionAttributes';
+} from '../common/util/converter';
+import { useTranslation } from '../common/components/LocalizationProvider';
+import usePositionAttributes from '../common/attributes/usePositionAttributes';
+import SettingsMenu from './components/SettingsMenu';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   details: {
+    display: 'flex',
     flexDirection: 'column',
+    gap: theme.spacing(2),
+    paddingBottom: theme.spacing(3),
   },
 }));
 
@@ -29,8 +41,8 @@ const MaintenancePage = () => {
   const [item, setItem] = useState();
   const [labels, setLabels] = useState({ start: '', period: '' });
 
-  const speedUnit = useAttributePreference('speedUnit');
-  const distanceUnit = useAttributePreference('distanceUnit');
+  const speedUnit = useAttributePreference('speedUnit', 'kn');
+  const distanceUnit = useAttributePreference('distanceUnit', 'km');
 
   const convertToList = (attributes) => {
     const otherList = [];
@@ -59,8 +71,11 @@ const MaintenancePage = () => {
           setLabels({ ...labels, start: t(prefixString('shared', speedUnit)), period: t(prefixString('shared', speedUnit)) });
           break;
         default:
+          setLabels({ ...labels, start: null, period: null });
           break;
       }
+    } else {
+      setLabels({ ...labels, start: null, period: null });
     }
   };
 
@@ -94,10 +109,18 @@ const MaintenancePage = () => {
     return value;
   };
 
+  const validate = () => item && item.name && item.type && item.start && item.period;
+
   return (
-    <EditItemView endpoint="maintenance" item={item} setItem={setItem}>
-      {item
-        && (
+    <EditItemView
+      endpoint="maintenance"
+      item={item}
+      setItem={setItem}
+      validate={validate}
+      menu={<SettingsMenu />}
+      breadcrumbs={['settingsTitle', 'sharedMaintenance']}
+    >
+      {item && (
         <>
           <Accordion defaultExpanded>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -107,15 +130,14 @@ const MaintenancePage = () => {
             </AccordionSummary>
             <AccordionDetails className={classes.details}>
               <TextField
-                margin="normal"
                 value={item.name || ''}
                 onChange={(event) => setItem({ ...item, name: event.target.value })}
                 label={t('sharedName')}
-                variant="filled"
               />
-              <FormControl variant="filled" margin="normal" fullWidth>
+              <FormControl>
                 <InputLabel>{t('sharedType')}</InputLabel>
                 <Select
+                  label={t('sharedType')}
                   value={item.type || ''}
                   onChange={onMaintenanceTypeChange}
                 >
@@ -125,45 +147,26 @@ const MaintenancePage = () => {
                 </Select>
               </FormControl>
               <TextField
-                margin="normal"
                 type="number"
                 value={rawToValue(item.start) || ''}
                 onChange={(event) => setItem({ ...item, start: valueToRaw(event.target.value) })}
-                label={t('maintenanceStart')}
-                variant="filled"
-                InputProps={{
-                  endAdornment: <InputAdornment position="start">{labels.start}</InputAdornment>,
-                }}
+                label={labels.start ? `${t('maintenanceStart')} (${labels.start})` : t('maintenanceStart')}
               />
               <TextField
-                margin="normal"
                 type="number"
                 value={rawToValue(item.period) || ''}
                 onChange={(event) => setItem({ ...item, period: valueToRaw(event.target.value) })}
-                label={t('maintenancePeriod')}
-                variant="filled"
-                InputProps={{
-                  endAdornment: <InputAdornment position="start">{labels.period}</InputAdornment>,
-                }}
+                label={labels.period ? `${t('maintenancePeriod')} (${labels.period})` : t('maintenancePeriod')}
               />
             </AccordionDetails>
           </Accordion>
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="subtitle1">
-                {t('sharedAttributes')}
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails className={classes.details}>
-              <EditAttributesView
-                attributes={item.attributes}
-                setAttributes={(attributes) => setItem({ ...item, attributes })}
-                definitions={{}}
-              />
-            </AccordionDetails>
-          </Accordion>
+          <EditAttributesAccordion
+            attributes={item.attributes}
+            setAttributes={(attributes) => setItem({ ...item, attributes })}
+            definitions={{}}
+          />
         </>
-        )}
+      )}
     </EditItemView>
   );
 };
