@@ -9,7 +9,6 @@ import {
   Checkbox,
   TextField,
 } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { DropzoneArea } from 'react-mui-dropzone';
 import EditItemView from './components/EditItemView';
@@ -22,18 +21,11 @@ import { useAdministrator } from '../common/util/permissions';
 import SettingsMenu from './components/SettingsMenu';
 import useCommonDeviceAttributes from '../common/attributes/useCommonDeviceAttributes';
 import { useCatch } from '../reactHelper';
-
-const useStyles = makeStyles((theme) => ({
-  details: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(2),
-    paddingBottom: theme.spacing(3),
-  },
-}));
+import useQuery from '../common/util/useQuery';
+import useSettingsStyles from './common/useSettingsStyles';
 
 const DevicePage = () => {
-  const classes = useStyles();
+  const classes = useSettingsStyles();
   const t = useTranslation();
 
   const admin = useAdministrator();
@@ -41,7 +33,10 @@ const DevicePage = () => {
   const commonDeviceAttributes = useCommonDeviceAttributes(t);
   const deviceAttributes = useDeviceAttributes(t);
 
-  const [item, setItem] = useState();
+  const query = useQuery();
+  const uniqueId = query.get('uniqueId');
+
+  const [item, setItem] = useState(uniqueId ? { uniqueId } : null);
 
   const handleFiles = useCatch(async (files) => {
     if (files.length > 0) {
@@ -87,6 +82,7 @@ const DevicePage = () => {
                 onChange={(event) => setItem({ ...item, uniqueId: event.target.value })}
                 label={t('deviceIdentifier')}
                 helperText={t('deviceIdentifierHelp')}
+                disabled={Boolean(uniqueId)}
               />
             </AccordionDetails>
           </Accordion>
@@ -98,7 +94,7 @@ const DevicePage = () => {
             </AccordionSummary>
             <AccordionDetails className={classes.details}>
               <SelectField
-                value={item.groupId || 0}
+                value={item.groupId}
                 onChange={(event) => setItem({ ...item, groupId: Number(event.target.value) })}
                 endpoint="/api/groups"
                 label={t('groupParent')}
@@ -120,7 +116,6 @@ const DevicePage = () => {
               />
               <SelectField
                 value={item.category || 'default'}
-                emptyValue={null}
                 onChange={(event) => setItem({ ...item, category: event.target.value })}
                 data={deviceCategories.map((category) => ({
                   id: category,
@@ -129,7 +124,7 @@ const DevicePage = () => {
                 label={t('deviceCategory')}
               />
               <SelectField
-                value={item.calendarId || 0}
+                value={item.calendarId}
                 onChange={(event) => setItem({ ...item, calendarId: Number(event.target.value) })}
                 endpoint="/api/calendars"
                 label={t('sharedCalendar')}

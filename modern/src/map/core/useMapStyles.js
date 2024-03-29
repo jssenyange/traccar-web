@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from '../../common/components/LocalizationProvider';
 import { useAttributePreference } from '../../common/util/preferences';
@@ -37,7 +38,7 @@ export default () => {
   const mapboxAccessToken = useAttributePreference('mapboxAccessToken');
   const customMapUrl = useSelector((state) => state.session.server.mapUrl);
 
-  return [
+  return useMemo(() => [
     {
       id: 'locationIqStreets',
       title: t('mapLocationIqStreets'),
@@ -217,6 +218,16 @@ export default () => {
       attribute: 'mapboxAccessToken',
     },
     {
+      id: 'mapboxStreetsDark',
+      title: t('mapMapboxStreetsDark'),
+      style: styleCustom({
+        tiles: [`https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`],
+        maxZoom: 22,
+      }),
+      available: !!mapboxAccessToken,
+      attribute: 'mapboxAccessToken',
+    },
+    {
       id: 'mapboxOutdoors',
       title: t('mapMapboxOutdoors'),
       style: styleCustom({
@@ -244,5 +255,5 @@ export default () => {
       }),
       available: !!customMapUrl,
     },
-  ];
+  ], [t, mapTilerKey, locationIqKey, bingMapsKey, tomTomKey, hereKey, mapboxAccessToken, customMapUrl]);
 };

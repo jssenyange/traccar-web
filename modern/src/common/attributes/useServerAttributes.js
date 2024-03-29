@@ -1,6 +1,10 @@
 import { useMemo } from 'react';
 
 export default (t) => useMemo(() => ({
+  support: {
+    name: t('settingsSupport'),
+    type: 'string',
+  },
   title: {
     name: t('serverName'),
     type: 'string',
@@ -35,8 +39,24 @@ export default (t) => useMemo(() => ({
     name: t('settingsDarkMode'),
     type: 'boolean',
   },
+  totpEnable: {
+    name: t('settingsTotpEnable'),
+    type: 'boolean',
+  },
+  totpForce: {
+    name: t('settingsTotpForce'),
+    type: 'boolean',
+  },
+  serviceWorkerUpdateInterval: {
+    name: t('settingsServiceWorkerUpdateInterval'),
+    type: 'number',
+  },
   'ui.disableLoginLanguage': {
     name: t('attributeUiDisableLoginLanguage'),
+    type: 'boolean',
+  },
+  disableShare: {
+    name: t('serverDisableShare'),
     type: 'boolean',
   },
 }), [t]);

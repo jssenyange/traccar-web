@@ -14,10 +14,14 @@ import {
   FormGroup,
   TextField,
   Button,
+  InputAdornment,
+  IconButton,
+  OutlinedInput,
 } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import CachedIcon from '@mui/icons-material/Cached';
+import CloseIcon from '@mui/icons-material/Close';
 import { useDispatch, useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 import EditItemView from './components/EditItemView';
@@ -33,18 +37,10 @@ import useQuery from '../common/util/useQuery';
 import { useCatch } from '../reactHelper';
 import useMapStyles from '../map/core/useMapStyles';
 import { map } from '../map/core/MapView';
-
-const useStyles = makeStyles((theme) => ({
-  details: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(2),
-    paddingBottom: theme.spacing(3),
-  },
-}));
+import useSettingsStyles from './common/useSettingsStyles';
 
 const UserPage = () => {
-  const classes = useStyles();
+  const classes = useSettingsStyles();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const t = useTranslation();
@@ -56,6 +52,8 @@ const UserPage = () => {
   const currentUser = useSelector((state) => state.session.user);
   const registrationEnabled = useSelector((state) => state.session.server.registration);
   const openIdForced = useSelector((state) => state.session.server.openIdForce);
+  const totpEnable = useSelector((state) => state.session.server.attributes.totpEnable);
+  const totpForce = useSelector((state) => state.session.server.attributes.totpForce);
 
   const mapStyles = useMapStyles();
   const commonUserAttributes = useCommonUserAttributes(t);
@@ -82,6 +80,15 @@ const UserPage = () => {
     }
   });
 
+  const handleGenerateTotp = useCatch(async () => {
+    const response = await fetch('/api/users/totp', { method: 'POST' });
+    if (response.ok) {
+      setItem({ ...item, totpKey: await response.text() });
+    } else {
+      throw Error(await response.text());
+    }
+  });
+
   const query = useQuery();
   const [queryHandled, setQueryHandled] = useState(false);
   const attribute = query.get('attribute');
@@ -103,7 +110,7 @@ const UserPage = () => {
     }
   };
 
-  const validate = () => item && item.name && item.email && (item.id || item.password);
+  const validate = () => item && item.name && item.email && (item.id || item.password) && (admin || !totpForce || item.totpKey);
 
   return (
     <EditItemView
@@ -127,21 +134,41 @@ const UserPage = () => {
             <AccordionDetails className={classes.details}>
               <TextField
                 value={item.name || ''}
-                onChange={(event) => setItem({ ...item, name: event.target.value })}
+                onChange={(e) => setItem({ ...item, name: e.target.value })}
                 label={t('sharedName')}
               />
               <TextField
                 value={item.email || ''}
-                onChange={(event) => setItem({ ...item, email: event.target.value })}
+                onChange={(e) => setItem({ ...item, email: e.target.value })}
                 label={t('userEmail')}
                 disabled={fixedEmail}
               />
               {!openIdForced && (
                 <TextField
                   type="password"
-                  onChange={(event) => setItem({ ...item, password: event.target.value })}
+                  onChange={(e) => setItem({ ...item, password: e.target.value })}
                   label={t('userPassword')}
                 />
+              )}
+              {totpEnable && (
+                <FormControl>
+                  <InputLabel>{t('loginTotpKey')}</InputLabel>
+                  <OutlinedInput
+                    readOnly
+                    label={t('loginTotpKey')}
+                    value={item.totpKey || ''}
+                    endAdornment={(
+                      <InputAdornment position="end">
+                        <IconButton size="small" edge="end" onClick={handleGenerateTotp}>
+                          <CachedIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton size="small" edge="end" onClick={() => setItem({ ...item, totpKey: null })}>
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </InputAdornment>
+                    )}
+                  />
+                </FormControl>
               )}
             </AccordionDetails>
           </Accordion>
@@ -154,7 +181,7 @@ const UserPage = () => {
             <AccordionDetails className={classes.details}>
               <TextField
                 value={item.phone || ''}
-                onChange={(event) => setItem({ ...item, phone: event.target.value })}
+                onChange={(e) => setItem({ ...item, phone: e.target.value })}
                 label={t('sharedPhone')}
               />
               <FormControl>
@@ -176,7 +203,7 @@ const UserPage = () => {
                 <Select
                   label={t('settingsCoordinateFormat')}
                   value={item.coordinateFormat || 'dd'}
-                  onChange={(event) => setItem({ ...item, coordinateFormat: event.target.value })}
+                  onChange={(e) => setItem({ ...item, coordinateFormat: e.target.value })}
                 >
                   <MenuItem value="dd">{t('sharedDecimalDegrees')}</MenuItem>
                   <MenuItem value="ddm">{t('sharedDegreesDecimalMinutes')}</MenuItem>
@@ -231,8 +258,7 @@ const UserPage = () => {
                 </Select>
               </FormControl>
               <SelectField
-                value={(item.attributes && item.attributes.timezone) || ''}
-                emptyValue=""
+                value={item.attributes && item.attributes.timezone}
                 onChange={(e) => setItem({ ...item, attributes: { ...item.attributes, timezone: e.target.value } })}
                 endpoint="/api/server/timezones"
                 keyGetter={(it) => it}
@@ -241,12 +267,12 @@ const UserPage = () => {
               />
               <TextField
                 value={item.poiLayer || ''}
-                onChange={(event) => setItem({ ...item, poiLayer: event.target.value })}
+                onChange={(e) => setItem({ ...item, poiLayer: e.target.value })}
                 label={t('mapPoiLayer')}
               />
               <FormGroup>
                 <FormControlLabel
-                  control={<Checkbox checked={item.twelveHourFormat} onChange={(event) => setItem({ ...item, twelveHourFormat: event.target.checked })} />}
+                  control={<Checkbox checked={item.twelveHourFormat} onChange={(e) => setItem({ ...item, twelveHourFormat: e.target.checked })} />}
                   label={t('settingsTwelveHourFormat')}
                 />
               </FormGroup>
@@ -262,19 +288,19 @@ const UserPage = () => {
               <TextField
                 type="number"
                 value={item.latitude || 0}
-                onChange={(event) => setItem({ ...item, latitude: Number(event.target.value) })}
+                onChange={(e) => setItem({ ...item, latitude: Number(e.target.value) })}
                 label={t('positionLatitude')}
               />
               <TextField
                 type="number"
                 value={item.longitude || 0}
-                onChange={(event) => setItem({ ...item, longitude: Number(event.target.value) })}
+                onChange={(e) => setItem({ ...item, longitude: Number(e.target.value) })}
                 label={t('positionLongitude')}
               />
               <TextField
                 type="number"
                 value={item.zoom || 0}
-                onChange={(event) => setItem({ ...item, zoom: Number(event.target.value) })}
+                onChange={(e) => setItem({ ...item, zoom: Number(e.target.value) })}
                 label={t('serverZoom')}
               />
               <Button
@@ -378,7 +404,7 @@ const UserPage = () => {
               <AccordionDetails className={classes.details}>
                 <TextField
                   value={deleteEmail}
-                  onChange={(event) => setDeleteEmail(event.target.value)}
+                  onChange={(e) => setDeleteEmail(e.target.value)}
                   label={t('userEmail')}
                   error={deleteFailed}
                 />
