@@ -25,8 +25,8 @@ const MapAccuracy = ({ positions }) => {
         ['==', '$type', 'Polygon'],
       ],
       paint: {
-        'fill-color': theme.palette.colors.geometry,
-        'fill-outline-color': theme.palette.colors.geometry,
+        'fill-color': theme.palette.geometry.main,
+        'fill-outline-color': theme.palette.geometry.main,
         'fill-opacity': 0.25,
       },
     });
@@ -42,13 +42,12 @@ const MapAccuracy = ({ positions }) => {
   }, []);
 
   useEffect(() => {
-    const data = {
+    map.getSource(id)?.setData({
       type: 'FeatureCollection',
       features: positions
         .filter((position) => position.accuracy > 0)
         .map((position) => circle([position.longitude, position.latitude], position.accuracy * 0.001)),
-    };
-    map.getSource(id).setData(data);
+    });
   }, [positions]);
 
   return null;
