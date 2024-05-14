@@ -184,6 +184,7 @@
     "loginReset": "Reset Password",
     "loginRegister": "Register",
     "loginLogin": "Login",
+    "loginRememberMe": "Remember Me",
     "loginOpenId": "Login with OpenID",
     "loginFailed": "Incorrect email address or password",
     "loginCreated": "New user has been registered",

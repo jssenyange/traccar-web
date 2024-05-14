@@ -46,7 +46,12 @@ const CombinedReportPage = () => {
     try {
       const response = await fetch(`/api/reports/combined?${query.toString()}`);
       if (response.ok) {
-        setItems(await response.json());
+        let reportItems = await response.json();
+        reportItems.forEach(
+          (reportItem) =>
+            (reportItem["deviceName"] = devices[reportItem.deviceId]?.name)
+        );
+        setItems(reportItems);
       } else {
         throw Error(await response.text());
       }
@@ -65,7 +70,7 @@ const CombinedReportPage = () => {
               {items.map((item) => (
                 <MapRoutePath
                   key={item.deviceId}
-                  name={devices[item.deviceId].name}
+                  name={item["deviceName"]}
                   coordinates={item.route}
                 />
               ))}
@@ -89,7 +94,7 @@ const CombinedReportPage = () => {
             <TableBody>
               {!loading ? items.flatMap((item) => item.events.map((event, index) => (
                 <TableRow key={event.id}>
-                  <TableCell>{index ? '' : devices[item.deviceId].name}</TableCell>
+                  <TableCell>{index ? '' : item["deviceName"]}</TableCell>
                   <TableCell>{formatTime(event.eventTime, 'seconds', hours12)}</TableCell>
                   <TableCell>{t(prefixString('event', event.type))}</TableCell>
                 </TableRow>
